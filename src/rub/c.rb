@@ -44,15 +44,27 @@ module C
 		p = p.expand_path
 	end
 	
+	class TargetTag < Rub::Target
+		attr_reader :output, :input
+		
+		def initialize(t)
+			@output = [t]
+			@input  = []
+		end
+		
+		def require(f)
+			input << C.path(f)
+		end
+	end
+	
 	class Tag
 		def initialize(t)
-			@target = Rub::Target.new
-			@target.out << t
+			@target = TargetTag.new(t)
 			@target.register
 		end
 		
 		def require(f)
-			@target.in << C.path(f)
+			@target.require C.path(f)
 		end
 	end
 	
@@ -66,6 +78,8 @@ module C
 			t = Tag.new(p)
 		end
 		
+		p t
+		
 		t
 	end
 	
@@ -76,8 +90,8 @@ module C
 		out   .is_a?(Array) or out = [out]
 		cmd[0].is_a?(Array) or cmd = [cmd]
 		
-		t.in .concat(src)
-		t.out.concat(out)
+		t.input .concat(src)
+		t.output.concat(out)
 		t.add_cmds cmd
 		
 		t.register

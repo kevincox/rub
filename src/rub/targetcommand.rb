@@ -26,7 +26,7 @@ require 'rub/target'
 require 'rub/system'
 
 module Rub
-	class TargetCommand < Target
+	class TargetCommand < SmartTarget
 	
 		def initialize
 			super
@@ -37,7 +37,7 @@ module Rub
 		def add_cmd(cmd)
 			cmd = cmd.dup
 			cmd[0] = C.find_command(cmd[0])
-			@in << cmd[0]
+			@input << cmd[0]
 			@cmd << cmd
 			
 			cmd
@@ -54,8 +54,8 @@ module Rub
 				return
 			end
 			
-			Rub::run(['mkdir', '-pv', *@out.map{|o| o.dirname}], "Building #{@out}...")
-			@cmd.all?{|c| Rub::run(c, "Building #{@out}...")} or exit 1
+			Rub::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Building #{@output}...")
+			@cmd.all?{|c| Rub::run(c, "Building #{@output}...")} or exit 1
 			
 			clean
 		end

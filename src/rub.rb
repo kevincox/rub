@@ -45,12 +45,5 @@ Rub::Runner.doFile(Rub::Env.src_dir+"root.rub")
 Rub::Runner.doFile(Rub::Env.src_dir+"dir.rub")
 
 ARGV.each do |t|
-	tar = Rub.targets[Pathname.new(t).expand_path(Rub::Env.cmd_dir)]
-	
-	if not tar
-		$stderr.puts "Error: can not build target #{t}, don't know how."
-		exit 1
-	end
-	
-	tar.build
+	Rub::get_target(Pathname.new(t).expand_path(Rub::Env.cmd_dir)).build
 end
