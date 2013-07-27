@@ -78,8 +78,6 @@ module C
 			t = Tag.new(p)
 		end
 		
-		p t
-		
 		t
 	end
 	
@@ -111,7 +109,7 @@ module C
 		           .each do |d|
 			names.each do |n|
 				exe = d + n
-				p exe
+				#p exe
 				
 				exe.executable? and break
 			end

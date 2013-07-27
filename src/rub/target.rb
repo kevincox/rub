@@ -47,7 +47,7 @@ module Rub
 		
 		def register
 			output.map!{|f| f.expand_path}
-			output.each{|d| p d; Rub.targets[d] = self }
+			output.each{|d| Rub.targets[d] = self }
 		end
 		
 		def clean?
@@ -72,7 +72,7 @@ module Rub
 		end
 	end
 	
-	class SmartTarget < Target
+	class TargetSmart < Target
 		attr_reader :input, :output
 	
 		def initialize
@@ -106,7 +106,7 @@ module Rub
 		
 		def build
 			if not output[0].exist?
-				p self
+				#p self
 				$stderr.puts "Error: source file #{output[0]} does not exist!"
 				exit 1
 			end

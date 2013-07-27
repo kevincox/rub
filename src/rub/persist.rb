@@ -41,13 +41,13 @@ module Rub
 	
 	spersistfile = Rub::Env.global_cache + "persistant.marshal"
 	if spersistfile.exist?
-		@spersistant = Marshal.load(File.new(spersistfile, 'r').read)
+		@spersistant = Marshal.load(spersistfile.read)
 	else
 		@spersistant = {}
 	end
 	
 	END {
-		File.new(spersistfile, 'w').write(Marshal.dump(@spersistant))
+		spersistfile.open('w').write(Marshal.dump(@spersistant))
 	}
 end
 

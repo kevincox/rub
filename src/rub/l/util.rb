@@ -24,6 +24,8 @@
 
 require 'rub/targetcommand'
 
+D.resolve_path :pefix
+
 module L
 	module Util
 		def self.install(what, where)
@@ -32,11 +34,19 @@ module L
 			end
 			
 			what.map!{|f| Pathname.new(f).expand_path}
-			where = Pathname.new(where).expand_path
+			where = Pathname.new(where).expand_path(D[:prefix])
 			
 			it = C.tag('=install')
 			
-			what.each do |f|
+			what.map do |f|
+				f.directory? or f
+			
+				c = []
+				f.find do |e|
+					e.file? and c << e
+				end
+				c
+			end.flatten.each do |f|
 				out = where+f.basename
 				C.generator(f, ['install', "-D", f, out], out).each do |o|
 					it.require(out)

@@ -76,4 +76,10 @@ module D
 	def self.fromFile(fn)
 		File.open(fn) {|f| f.each_line {|l| define(l.chomp) } }
 	end
+	
+	def self.resolve_path(k)
+		@@map[k] or return nil
+	
+		@@map[k] = Pathname.new(@@map[k]).expand_path(Rub::Env.cmd_dir)
+	end
 end
