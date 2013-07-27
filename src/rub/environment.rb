@@ -49,7 +49,7 @@ module Rub
 		
 		@out_dir = @src_dir + 'build/'
 
-		@global_cache = Pathname(Dir.home())+".local/share/rub/cache/"
+		@global_cache = Pathname(Dir.home())+".cache/rub/cache/"
 		def self.project_cache
 			@out_dir + "cache/"
 		end

@@ -27,12 +27,23 @@ require 'rub/system'
 
 module Rub
 	class TargetCommand < Target
-		attr_accessor :cmd
-		
+	
 		def initialize
 			super
 			
 			@cmd = []
+		end
+		
+		def add_cmd(cmd)
+			cmd = cmd.dup
+			cmd[0] = C.find_command(cmd[0])
+			@in << cmd[0]
+			@cmd << cmd
+			
+			cmd
+		end
+		def add_cmds(cmds)
+			cmds.map{|c| add_cmd c}
 		end
 		
 		def build
@@ -44,7 +55,7 @@ module Rub
 			end
 			
 			Rub::run(['mkdir', '-pv', *@out.map{|o| o.dirname}], "Building #{@out}...")
-			@cmd.each{|c| Rub::run(c, "Building #{@out}...")}
+			@cmd.all?{|c| Rub::run(c, "Building #{@out}...")} or exit 1
 			
 			clean
 		end

@@ -78,10 +78,33 @@ module C
 		
 		t.in .concat(src)
 		t.out.concat(out)
-		t.cmd.concat(cmd)
+		t.add_cmds cmd
 		
 		t.register
 		
 		out
+	end
+	
+	def self.find_command(cmd)
+		exe = Rub.spersistant["C.find_command.#{cmd}"]
+		
+		exe and exe.executable? and return exe
+
+		exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
+		names = exts.map{|e| cmd+e}
+		ENV['PATH'].split(File::PATH_SEPARATOR)
+		           .map{|d|Pathname.new(d)}
+		           .each do |d|
+			names.each do |n|
+				exe = d + n
+				p exe
+				
+				exe.executable? and break
+			end
+			
+			exe.executable? and break
+		end
+		
+		Rub.spersistant["C.find_command.#{cmd}"] = exe
 	end
 end

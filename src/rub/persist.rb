@@ -24,18 +24,30 @@
 
 module Rub
 	class << self
-		attr_reader :persistant
+		attr_reader :ppersistant
+		attr_reader :spersistant
 	end
 	
-	persistfile = Rub::Env.project_cache + "persistant.marshal"
-	if persistfile.exist?
-		@persistant = Marshal.load(File.new(persistfile, 'r').read)
+	ppersistfile = Rub::Env.project_cache + "persistant.marshal"
+	if ppersistfile.exist?
+		@ppersistant = Marshal.load(File.new(ppersistfile, 'r').read)
 	else
-		@persistant = {}
+		@ppersistant = {}
 	end
 	
 	END {
-		File.new(persistfile, 'w').write(Marshal.dump(@persistant))
+		File.new(ppersistfile, 'w').write(Marshal.dump(@ppersistant))
+	}
+	
+	spersistfile = Rub::Env.global_cache + "persistant.marshal"
+	if spersistfile.exist?
+		@spersistant = Marshal.load(File.new(spersistfile, 'r').read)
+	else
+		@spersistant = {}
+	end
+	
+	END {
+		File.new(spersistfile, 'w').write(Marshal.dump(@spersistant))
 	}
 end
 

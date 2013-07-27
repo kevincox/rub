@@ -46,15 +46,13 @@ module Rub
 		end
 		
 		def clean
-			if not @out.all?{|f| f.exist?}
-				return
-			end
+			@out.all?{|f| f.exist?} or return
 			
-			 Rub::persistant["Rub.Target.#{@out.sort.join('\0')}"] = hash
+			 Rub::ppersistant["Rub.Target.#{@out.sort.join('\0')}"] = hash
 		end
 		
 		def clean?
-			@out.all?{|f| f.exist?} and Rub::persistant["Rub.Target.#{@out.sort.join('\0')}"] == hash
+			@out.all?{|f| f.exist?} and Rub::ppersistant["Rub.Target.#{@out.sort.join('\0')}"] == hash
 		end
 		
 		def hash

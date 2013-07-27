@@ -34,7 +34,7 @@ module L
 			what.map!{|f| Pathname.new(f).expand_path}
 			where = Pathname.new(where).expand_path
 			
-			it = C.tag('#install')
+			it = C.tag('=install')
 			
 			what.each do |f|
 				out = where+f.basename
