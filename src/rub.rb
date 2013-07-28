@@ -25,6 +25,7 @@
 ################################################################################
 
 require 'pathname'
+require 'pp'
 
 $LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
 
@@ -43,6 +44,8 @@ require 'rub/c'
 ##### Add the first two scripts.
 Rub::Runner.doFile(Rub::Env.src_dir+"root.rub")
 Rub::Runner.doFile(Rub::Env.src_dir+"dir.rub")
+
+ARGV.empty? and ARGV << '=all'
 
 ARGV.each do |t|
 	Rub::get_target(Pathname.new(t).expand_path(Rub::Env.cmd_dir)).build

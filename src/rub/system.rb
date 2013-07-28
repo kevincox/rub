@@ -24,12 +24,12 @@
 
 module Rub
 	class Command
-		attr_reader :env
+		attr_reader   :env
 	
-		attr_writer :stdin
-		attr_reader :stdout, :stderr
+		attr_accessor :stdin
+		attr_reader   :stdout, :stderr
 		
-		attr_reader :status
+		attr_reader   :status
 		
 		attr_accessor :clearenv
 		attr_accessor :mergeouts
@@ -101,19 +101,50 @@ module Rub
 	def self.run(cmd, desc)
 		cmd = cmd.map{|a| a.to_s}
 	
-		puts desc
-		puts cmd.inspect
+		bs = BuildStep.new
+		bs.desc = desc
+		bs.cmd  = cmd
 		
 		c = Command.new(cmd)
 		c.mergeouts = true
 		
-		if c.run
-			puts c.stdout
-			true
-		else
-			puts c.stdout
-			puts "#{cmd[0]} failed with exit status #{c.status.exitstatus}."
-			false
+		c.run
+		
+		bs.out    = c.stdout
+		bs.status = c.status.exitstatus
+		
+		bs.print
+		
+		c.success?
+	end
+	
+	class BuildStep
+		attr_accessor :desc
+		attr_accessor :cmd
+		attr_accessor :out
+		attr_accessor :status
+		
+		def initialize(cmd=[], out="", desc="", status=0)
+			@cmd    = cmd
+			@out    = out
+			@desc   = desc
+			@status = status
+		end
+		
+		def format_cmd(cmd)
+			cmd.map do |e|
+				if /[~`!#$&*(){};'"]/ =~ e
+					"'#{e.sub(/['"]/, '\\\1')}'"
+				else
+					e
+				end
+			end.join(' ')
+		end
+		
+		def print
+			puts "\e[1m#@desc\e[0m"
+			puts format_cmd @cmd
+			Kernel::print @out
 		end
 	end
 end

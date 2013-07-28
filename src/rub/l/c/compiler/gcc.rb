@@ -22,42 +22,63 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/target'
-require 'rub/system'
+require 'rub/l/c'
 
-module Rub
-	class TargetCommand < TargetSmart
-	
-		def initialize
-			super
+module L
+	module C
+		class CompilerGCC < L::C::Compiler 
+			def initialize
+				super
 			
-			@cmd = []
-		end
-		
-		def add_cmd(cmd)
-			cmd = cmd.dup
-			cmd[0] = C.find_command(cmd[0])
-			@input << cmd[0]
-			@cmd << cmd
-			
-			cmd
-		end
-		def add_cmds(cmds)
-			cmds.map{|c| add_cmd c}
-		end
-		
-		def build
-			super
-			
-			if clean?
-				#p "#{self.inspect}: Already clean, not rebuilding."
-				return
+				@exe = ::C.find_command 'gcc'
 			end
 			
-			Rub::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Building #{@output}...")
-			@cmd.all?{|c| Rub::run(c, "Building #{@output}...")} or exit 1
+			def available?
+				not not @exe
+			end
 			
-			clean
+			@@o_flags = {
+				:none=>'-O0',
+				:some=>'-O1',
+				:full=>'-O2',
+				:max =>'-O3',
+			}
+			@@of_flags = {
+				nil=>[],
+				:speed=>'-Ofast',
+				:size=>'-Os',
+			}
+			
+			def generate_flags
+				f = []
+				
+				f << (@@o_flags[options.optimize    ] || [])
+				f << (@@o_flags[options.optimize_for] || [])
+				
+				f << options.include_dirs.map do |d|
+					"-I#{d}"
+				end
+				f << options.define.map do |k, v|
+					# -Dk if v is true else -Dk=v.
+					"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
+				end
+				
+				f.flatten!
+			end
+			
+			def compile_command(src, obj)
+				[@exe,'-c', *generate_flags, "-o#{obj}", *src]
+			end
+			
+			def do_compile_string(str, obj)
+				c = Rub::Command.new [@exe, '-c', '-xc', *generate_flags, '-o', obj, '-']
+				c.stdin = str
+				c.run
+				c
+			end
 		end
+		L::C.compilers[:gcc] = CompilerGCC
+		
+		D.push(:l_c_compiler, :gcc)
 	end
 end

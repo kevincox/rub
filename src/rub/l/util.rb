@@ -22,34 +22,32 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/targetcommand'
-
 D.resolve_path :pefix
 
 module L
 	module Util
 		def self.install(what, where)
-			if not what.is_a? Array
-				what = [what]
-			end
+			what = Rub::Tool.make_array what
 			
 			what.map!{|f| Pathname.new(f).expand_path}
 			where = Pathname.new(where).expand_path(D[:prefix])
 			
-			it = C.tag('=install')
+			it = ::C.tag('=install')
 			
 			what.map do |f|
-				f.directory? or f
+				f.directory? or next f
 			
 				c = []
 				f.find do |e|
 					e.file? and c << e
 				end
 				c
-			end.flatten.each do |f|
+			end
+			what.flatten!
+			what.each do |f|
 				out = where+f.basename
-				C.generator(f, ['install', "-D", f, out], out).each do |o|
-					it.require(out)
+				::C.generator(f, ['install', "-D", f, out], out, desc: "Installing").each do |o|
+					it.require(o)
 				end
 			end
 		end

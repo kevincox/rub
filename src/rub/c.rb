@@ -24,7 +24,8 @@
 
 require 'pathname'
 
-require 'rub/targetcommand'
+require 'rub/tool'
+require 'rub/targetgenerator'
 
 module C
 	def self.path(p)
@@ -53,7 +54,9 @@ module C
 		end
 		
 		def require(f)
-			input << C.path(f)
+			f = Rub::Tool.make_array f
+			
+			input.concat f.map!{|e| C.path(e)}
 		end
 	end
 	
@@ -64,7 +67,7 @@ module C
 		end
 		
 		def require(f)
-			@target.require C.path(f)
+			@target.require f
 		end
 	end
 	
@@ -81,11 +84,13 @@ module C
 		t
 	end
 	
-	def self.generator(src, cmd, out)
-		t = Rub::TargetCommand.new
+	def self.generator(src, cmd, out, desc: false)
+		t = Rub::TargetGenerator.new
 		
-		src   .is_a?(Array) or src = [src]
-		out   .is_a?(Array) or out = [out]
+		desc and t.action = desc
+		
+		src = Rub::Tool.make_array(src)
+		out = Rub::Tool.make_array(out)
 		cmd[0].is_a?(Array) or cmd = [cmd]
 		
 		t.input .concat(src)

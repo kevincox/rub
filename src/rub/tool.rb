@@ -22,94 +22,13 @@
 #                                                                              #
 ################################################################################
 
-require 'digest/sha1'
-require 'pathname'
-
 module Rub
-	class << self
-		attr_reader :targets
-	end
-	
-	@targets = {}
-	
-	def self.get_target(path)
-		path = C.path(path)
-		
-		t = @targets[path] or TargetSource.new(path)
-	end
-	
-	class Target
-		def input
-			[]
-		end
-		def output
-			[]
-		end
-		
-		def register
-			output.map!{|f| f.expand_path}
-			output.each{|d| Rub.targets[d] = self }
-		end
-		
-		def clean?
-			false
-		end
-		
-		def hash
-			Digest::SHA1.digest(
-				[
-					output.map{|f| Digest::SHA1.file(f).to_s }.join,
-					input .map{|i| Rub::get_target(i).hash   }.join,
-				].join
-			)
-		end
-		
-		def build
-			input.map!{|f| Pathname.new(f).expand_path}
-			
-			input.map{|f| [f, Rub.get_target(f)]}.each do |f, i| 
-				i.build
-			end
-		end
-	end
-	
-	class TargetSmart < Target
-		attr_reader :input, :output
-	
-		def initialize
-			@input  = []
-			@output = []
-		end
-		
-		def clean
-			output.all?{|f| f.exist?} or return
-			
-			 Rub::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash
-		end
-		
-		def clean?
-			output.all?{|f| f.exist?} and Rub::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash
-		end
-	end
-	
-	class TargetSource < Target
-		attr_reader :output
-		
-		def initialize(p)
-			@output = [p]
-		end
-		
-		def hash
-			@hashcache and return @hashcache
-			
-			@hashcache = Digest::SHA1.file(output[0]).to_s
-		end
-		
-		def build
-			if not output[0].exist?
-				#p self
-				$stderr.puts "Error: source file #{output[0]} does not exist!"
-				exit 1
+	module Tool
+		def self.make_array(a)
+			if a.is_a? Array
+				a.dup
+			else
+				[a]
 			end
 		end
 	end

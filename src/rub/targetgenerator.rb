@@ -22,95 +22,45 @@
 #                                                                              #
 ################################################################################
 
-require 'digest/sha1'
-require 'pathname'
+require 'rub/target'
+require 'rub/system'
 
 module Rub
-	class << self
-		attr_reader :targets
-	end
-	
-	@targets = {}
-	
-	def self.get_target(path)
-		path = C.path(path)
-		
-		t = @targets[path] or TargetSource.new(path)
-	end
-	
-	class Target
-		def input
-			[]
-		end
-		def output
-			[]
-		end
-		
-		def register
-			output.map!{|f| f.expand_path}
-			output.each{|d| Rub.targets[d] = self }
-		end
-		
-		def clean?
-			false
-		end
-		
-		def hash
-			Digest::SHA1.digest(
-				[
-					output.map{|f| Digest::SHA1.file(f).to_s }.join,
-					input .map{|i| Rub::get_target(i).hash   }.join,
-				].join
-			)
-		end
-		
-		def build
-			input.map!{|f| Pathname.new(f).expand_path}
-			
-			input.map{|f| [f, Rub.get_target(f)]}.each do |f, i| 
-				i.build
-			end
-		end
-	end
-	
-	class TargetSmart < Target
-		attr_reader :input, :output
+	class TargetGenerator < TargetSmart
+		attr_accessor :action
 	
 		def initialize
-			@input  = []
-			@output = []
-		end
-		
-		def clean
-			output.all?{|f| f.exist?} or return
+			super
 			
-			 Rub::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash
-		end
-		
-		def clean?
-			output.all?{|f| f.exist?} and Rub::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash
-		end
-	end
-	
-	class TargetSource < Target
-		attr_reader :output
-		
-		def initialize(p)
-			@output = [p]
-		end
-		
-		def hash
-			@hashcache and return @hashcache
+			@action = 'Building'
 			
-			@hashcache = Digest::SHA1.file(output[0]).to_s
+			@cmd = []
+		end
+		
+		def add_cmd(cmd)
+			cmd = cmd.dup
+			cmd[0] = C.find_command(cmd[0])
+			@input << cmd[0]
+			@cmd << cmd
+			
+			cmd
+		end
+		def add_cmds(cmds)
+			cmds.map{|c| add_cmd c}
 		end
 		
 		def build
-			if not output[0].exist?
-				#p self
-				$stderr.puts "Error: source file #{output[0]} does not exist!"
-				exit 1
+			super
+			
+			if clean?
+				#p "#{self.inspect}: Already clean, not rebuilding."
+				return
 			end
+			
+			Rub::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories")
+			@cmd.all?{|c| Rub::run(c, "#@action #{@output.join", "}")} or exit 1
+			
+			clean
 		end
 	end
 end
