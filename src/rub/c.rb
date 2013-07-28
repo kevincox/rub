@@ -125,3 +125,5 @@ module C
 		R.spersistant["C.find_command.#{cmd}"] = exe
 	end
 end
+
+D.resolve_path(:prefix, "/usr/local/")

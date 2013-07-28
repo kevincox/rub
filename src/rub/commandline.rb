@@ -31,7 +31,47 @@ module R
 	module CommandLine
 		help = lambda do
 					puts <<ENDHELP
-rub ... help coming soon.
+#{R.version_info_string}
+
+Usage: #{$0} [options] [targets]
+
+Targets:
+    Specify the targets to build.  If none are specified '=all' is assumed.
+    
+Options:
+    -o --out <dir>
+        Sets the Rub build directory.  This defaults to 'build/'.  This is
+        merely a scratch location and none of the files in this directory should
+        be used outside of Rub.  You may want to put this on fast storage (maybe
+        in RAM) to speed up complex builds.
+    -D, --define <key>[=<value>]
+        Define a configuration option.  The key is everything up to the first
+        '=' and the value is everything after.  If the key ends in '+' it is
+        treated as a '-P'.  If there is no '=' it is treated as a flag and it
+        is set.  Latter '-D' options overwrite earlier ones.
+    -D, --define <key>+=<value>
+    -P, --push   <key>[+=<value>]
+    -P, --push   <key>[=<value>]
+        Append a configuration option to a list.  If the current value is not
+        a list it is overwritten.  The key and value specification is the same
+        as for '-D' except that a '+' is not nessary and is assumed.
+    --script <script>
+        Run a script.  This script should only set define options as all of Rub
+        may not be initilized yet.  The script is executed in order with other
+        '--script', '-D' and '-P' options.
+    --explicit-scripts
+        Only run scripts specified on the command line.  This prevents system
+        and user defaults from being used.  Use with caution because it could
+        cause a build to fail if the provided definitions don't contain enough
+        information.
+    --no-cache
+        Disable caching.  All state will be lost between invocations of Rub and
+        all built files will be considered out of date.  Mostly useful when
+        testing build scripts and hacking on Rub itself.
+    -V, --version
+        Print the version and exit.
+    -h, --help
+        Print this help text and exit.
 ENDHELP
 			exit
 		end
@@ -42,19 +82,18 @@ ENDHELP
 		@cache = true
 	
 		opts = GetoptLong.new(
-			['--help',    '-h',    GetoptLong::NO_ARGUMENT       ],
-			['--version', '-V',    GetoptLong::NO_ARGUMENT       ],
-			['-D', '--define',     GetoptLong::REQUIRED_ARGUMENT ],
-			['-P', '--push',       GetoptLong::REQUIRED_ARGUMENT ],
-			['--script',           GetoptLong::REQUIRED_ARGUMENT ],
-			['--explicit-scripts', GetoptLong::NO_ARGUMENT       ],
-			['--out',    '-o',     GetoptLong::REQUIRED_ARGUMENT ],
-			['--no-cache',         GetoptLong::NO_ARGUMENT       ],
+			['--out',    '-o',        GetoptLong::REQUIRED_ARGUMENT ],
+			['-D', '--define',        GetoptLong::REQUIRED_ARGUMENT ],
+			['-P', '--push',          GetoptLong::REQUIRED_ARGUMENT ],
+			['--script',              GetoptLong::REQUIRED_ARGUMENT ],
+			['--explicit-scripts',    GetoptLong::NO_ARGUMENT       ],
+			['--no-cache',            GetoptLong::NO_ARGUMENT       ],
+			['--help',    '-h',       GetoptLong::NO_ARGUMENT       ],
+			['--version', '-V', '-v', GetoptLong::NO_ARGUMENT       ],
 		)
 		
 		scripts = [];
 		sysscripts = [
-			[:file, Pathname.new(__FILE__).dirname+"config.rb"],
 			[:file, Pathname.new("/etc/rub/config.rb")],
 			[:file, Pathname.new(Dir.home())+".config/rub/config.rb"],
 		].keep_if { |t, n| n.exist? }
@@ -62,9 +101,8 @@ ENDHELP
 
 		opts.each do |opt, arg|
 			case opt
-				when '--version'
-					puts 'rub version 0'
-					
+				when '--out'
+					Rub::Env.out_dir = Rub::Env.cmd_dir + arg
 				when '-D'
 					scripts.push [:define, arg]
 				when '-P'
@@ -72,13 +110,14 @@ ENDHELP
 				when '--script'
 					scripts.push [:file,   Pathname(arg)]
 				when '--explicit-scripts'
-					sysscripts = []
-				when '--help'
-					help.call
-				when '--out'
-					Rub::Env.out_dir = Rub::Env.cmd_dir + arg
 				when '--no-cache'
 					@cache = false
+					sysscripts = []
+				when '--version'
+					puts R.version_info_string
+					exit 0
+				when '--help'
+					help.call
 			end
 		end
 		

@@ -29,7 +29,7 @@ require 'pp'
 
 $LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
 
-#require 'rub/init'
+require 'rub/version'
 
 require 'rub/environment'
 require 'rub/commandline'

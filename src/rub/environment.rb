@@ -28,8 +28,7 @@ module R
 	module Env
 		class << self
 			attr_accessor :cmd_dir
-		
-			attr_accessor :src_dir
+
 			attr_accessor :out_dir
 			
 			attr_reader :global_cache
@@ -37,18 +36,22 @@ module R
 		
 		@cmd_dir = Pathname.pwd
 		
-		@src_dir = @cmd_dir
-		while not (@src_dir+'root.rub').exist?
-			@src_dir = @src_dir.parent
-			
-			if @src_dir.root?
-				$stderr.puts('root.rub not found.  Make sure you are in the source directory.')
-				exit(1)
+		def self.src_dir
+			@src_dir and return @src_dir
+		
+			@src_dir = @cmd_dir
+			while not (@src_dir+'root.rub').exist?
+				@src_dir = @src_dir.parent
+				
+				if @src_dir.root?
+					$stderr.puts('root.rub not found.  Make sure you are in the source directory.')
+					exit 1
+				end
 			end
+			
+			@out_dir = @src_dir + 'build/'
 		end
 		
-		@out_dir = @src_dir + 'build/'
-
 		@global_cache = Pathname(Dir.home())+".cache/rub/cache/"
 		def self.project_cache
 			@out_dir + "cache/"

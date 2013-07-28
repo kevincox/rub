@@ -22,4 +22,33 @@
 #                                                                              #
 ################################################################################
 
+module R
+	def self.name
+		'Rub'
+	end
+	def self.slug
+		'rub'
+	end
 
+	def self.version_major
+		0
+	end
+	def self.version_minor
+		0
+	end
+	def self.version_patch
+		0
+	end
+
+	def self.version
+		[version_major, version_minor, version_patch]
+	end
+	
+	def self.version_string
+		version.join('.')
+	end
+
+	def self.version_info_string
+		"#{slug} (#{name}) #{version_string}"
+	end
+end

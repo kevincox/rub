@@ -22,64 +22,8 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/environment'
-
-module D
-	@@map = {}
-	
-	def self.define(k, v=nil)
-		if v == nil
-			k, f, v = k.partition '='
-			
-			if k.end_with?('+')
-				return push(k[0..-2], v)
-			end
-		end
+module L
+	module LD
 		
-		k = k.to_sym
-		
-		if f == ""
-			v = true
-		end
-		
-		@@map[k] = v
-	end
-	
-	def self.push(k, v=nil)
-		if v == nil
-			k, f, v = k.partition '='
-			
-			if k.end_with?('+')
-				k = k[0..-2]
-			end
-		end
-		
-		k = k.to_sym
-		
-		if f == ''
-			v = true
-		end
-		
-		@@map[k].is_a?(Array) or @@map[k] = []
-		
-		@@map[k].push(v)
-	end
-	
-	def self.[] (k)
-		@@map[k]
-	end
-	
-	def self.map
-		return @@map
-	end
-	
-	def self.fromFile(fn)
-		File.open(fn) {|f| f.each_line {|l| define(l.chomp) } }
-	end
-	
-	def self.resolve_path(k, default=nil)
-		@@map[k] or return @@map[k] = default
-		
-		@@map[k] = Pathname.new(@@map[k]).expand_path(R::Env.cmd_dir)
 	end
 end
