@@ -22,32 +22,36 @@
 #                                                                              #
 ################################################################################
 
-module Rub
+module R
 	class << self
 		attr_reader :ppersistant
 		attr_reader :spersistant
 	end
 	
-	ppersistfile = Rub::Env.project_cache + "persistant.marshal"
-	if ppersistfile.exist?
+	ppersistfile = R::Env.project_cache + "persistant.marshal"
+	if ppersistfile.exist? && R::CommandLine.cache
 		@ppersistant = Marshal.load(File.new(ppersistfile, 'r').read)
 	else
 		@ppersistant = {}
 	end
 	
 	END {
-		File.new(ppersistfile, 'w').write(Marshal.dump(@ppersistant))
+		if R::CommandLine.cache
+			File.new(ppersistfile, 'w').write(Marshal.dump(@ppersistant))
+		end
 	}
 	
-	spersistfile = Rub::Env.global_cache + "persistant.marshal"
-	if spersistfile.exist?
+	spersistfile = R::Env.global_cache + "persistant.marshal"
+	if spersistfile.exist? && R::CommandLine.cache
 		@spersistant = Marshal.load(spersistfile.read)
 	else
 		@spersistant = {}
 	end
 	
 	END {
-		spersistfile.open('w').write(Marshal.dump(@spersistant))
+		if R::CommandLine.cache
+			spersistfile.open('w').write(Marshal.dump(@spersistant))
+		end
 	}
 end
 

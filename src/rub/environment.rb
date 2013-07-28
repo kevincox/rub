@@ -24,7 +24,7 @@
 
 require 'pathname'
 
-module Rub
+module R
 	module Env
 		class << self
 			attr_accessor :cmd_dir

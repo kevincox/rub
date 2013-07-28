@@ -22,7 +22,7 @@
 #                                                                              #
 ################################################################################
 
-module Rub
+module R
 	module Tool
 		def self.make_array(a)
 			if a.is_a? Array

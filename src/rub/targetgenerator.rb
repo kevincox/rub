@@ -25,7 +25,7 @@
 require 'rub/target'
 require 'rub/system'
 
-module Rub
+module R
 	class TargetGenerator < TargetSmart
 		attr_accessor :action
 	
@@ -57,8 +57,8 @@ module Rub
 				return
 			end
 			
-			Rub::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories")
-			@cmd.all?{|c| Rub::run(c, "#@action #{@output.join", "}")} or exit 1
+			R::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories")
+			@cmd.all?{|c| R::run(c, "#@action #{@output.join", "}")} or exit 1
 			
 			clean
 		end

@@ -35,9 +35,9 @@ module C
 			when '!'
 				Pathname.new(p[1..-1])
 			when '>'
-				Rub::Env.out_dir + p[1..-1]
+				R::Env.out_dir + p[1..-1]
 			when '<'
-				Rub::Env.src_dir + p[1..-1]
+				R::Env.src_dir + p[1..-1]
 			else
 				Pathname.new(p)
 		end
@@ -45,7 +45,7 @@ module C
 		p = p.expand_path
 	end
 	
-	class TargetTag < Rub::Target
+	class TargetTag < R::Target
 		attr_reader :output, :input
 		
 		def initialize(t)
@@ -54,7 +54,7 @@ module C
 		end
 		
 		def require(f)
-			f = Rub::Tool.make_array f
+			f = R::Tool.make_array f
 			
 			input.concat f.map!{|e| C.path(e)}
 		end
@@ -72,10 +72,10 @@ module C
 	end
 	
 	def self.tag(t)
-		p = Rub::Env.cmd_dir + t
+		p = R::Env.cmd_dir + t
 		p = p.expand_path
 		
-		t = Rub.targets[p]
+		t = R.targets[p]
 		
 		if not t
 			t = Tag.new(p)
@@ -85,12 +85,12 @@ module C
 	end
 	
 	def self.generator(src, cmd, out, desc: false)
-		t = Rub::TargetGenerator.new
+		t = R::TargetGenerator.new
 		
 		desc and t.action = desc
 		
-		src = Rub::Tool.make_array(src)
-		out = Rub::Tool.make_array(out)
+		src = R::Tool.make_array(src)
+		out = R::Tool.make_array(out)
 		cmd[0].is_a?(Array) or cmd = [cmd]
 		
 		t.input .concat(src)
@@ -103,7 +103,7 @@ module C
 	end
 	
 	def self.find_command(cmd)
-		exe = Rub.spersistant["C.find_command.#{cmd}"]
+		exe = R.spersistant["C.find_command.#{cmd}"]
 		
 		exe and exe.executable? and return exe
 
@@ -122,6 +122,6 @@ module C
 			exe.executable? and break
 		end
 		
-		Rub.spersistant["C.find_command.#{cmd}"] = exe
+		R.spersistant["C.find_command.#{cmd}"] = exe
 	end
 end

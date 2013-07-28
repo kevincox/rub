@@ -27,7 +27,7 @@ D.resolve_path :pefix
 module L
 	module Util
 		def self.install(what, where)
-			what = Rub::Tool.make_array what
+			what = R::Tool.make_array what
 			
 			what.map!{|f| Pathname.new(f).expand_path}
 			where = Pathname.new(where).expand_path(D[:prefix])

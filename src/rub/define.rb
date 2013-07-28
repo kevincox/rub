@@ -80,6 +80,6 @@ module D
 	def self.resolve_path(k)
 		@@map[k] or return nil
 	
-		@@map[k] = Pathname.new(@@map[k]).expand_path(Rub::Env.cmd_dir)
+		@@map[k] = Pathname.new(@@map[k]).expand_path(R::Env.cmd_dir)
 	end
 end

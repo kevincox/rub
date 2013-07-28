@@ -25,8 +25,8 @@
 require 'rub/environment'
 
 [
-	Rub::Env.src_dir,
-	Rub::Env.out_dir,
-	Rub::Env.global_cache,
-	Rub::Env.project_cache,
+	R::Env.src_dir,
+	R::Env.out_dir,
+	R::Env.global_cache,
+	R::Env.project_cache,
 ].each{|d| d.mkpath }

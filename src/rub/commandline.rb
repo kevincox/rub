@@ -27,7 +27,7 @@ require 'rub/define'
 #                                                                              #
 ################################################################################
 
-module Rub
+module R
 	module CommandLine
 		help = lambda do
 					puts <<ENDHELP
@@ -35,15 +35,21 @@ rub ... help coming soon.
 ENDHELP
 			exit
 		end
+		
+		class << self
+			attr_reader :cache
+		end
+		@cache = true
 	
 		opts = GetoptLong.new(
-			['--help',    '-h', GetoptLong::NO_ARGUMENT ],
-			['--version', '-V', GetoptLong::NO_ARGUMENT ],
-			['-D', '--define',  GetoptLong::REQUIRED_ARGUMENT ],
-			['-P', '--push',    GetoptLong::REQUIRED_ARGUMENT ],
-			['--script',   GetoptLong::REQUIRED_ARGUMENT ],
-			['--explicit-scripts', GetoptLong::NO_ARGUMENT ],
-			['--out',    '-o', GetoptLong::REQUIRED_ARGUMENT ],
+			['--help',    '-h',    GetoptLong::NO_ARGUMENT       ],
+			['--version', '-V',    GetoptLong::NO_ARGUMENT       ],
+			['-D', '--define',     GetoptLong::REQUIRED_ARGUMENT ],
+			['-P', '--push',       GetoptLong::REQUIRED_ARGUMENT ],
+			['--script',           GetoptLong::REQUIRED_ARGUMENT ],
+			['--explicit-scripts', GetoptLong::NO_ARGUMENT       ],
+			['--out',    '-o',     GetoptLong::REQUIRED_ARGUMENT ],
+			['--no-cache',         GetoptLong::NO_ARGUMENT       ],
 		)
 		
 		scripts = [];
@@ -71,6 +77,8 @@ ENDHELP
 					help.call
 				when '--out'
 					Rub::Env.out_dir = Rub::Env.cmd_dir + arg
+				when '--no-cache'
+					@cache = false
 			end
 		end
 		

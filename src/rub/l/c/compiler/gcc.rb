@@ -26,9 +26,13 @@ require 'rub/l/c'
 
 module L
 	module C
-		class CompilerGCC < L::C::Compiler 
+		class CompilerGCC < L::C::Compiler
+			attr_reader :name
+			
 			def initialize
 				super
+			
+				@name = :gcc
 			
 				@exe = ::C.find_command 'gcc'
 			end
@@ -71,7 +75,7 @@ module L
 			end
 			
 			def do_compile_string(str, obj)
-				c = Rub::Command.new [@exe, '-c', '-xc', *generate_flags, '-o', obj, '-']
+				c = R::Command.new [@exe, '-c', '-xc', *generate_flags, '-o', obj, '-']
 				c.stdin = str
 				c.run
 				c

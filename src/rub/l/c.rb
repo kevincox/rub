@@ -59,9 +59,12 @@ module L
 		end
 		
 		class Compiler
+			attr_reader :name
 			attr_reader :options
 			
 			def initialize
+				@name = :default
+			
 				@options = Options.new
 			end
 			
@@ -74,7 +77,7 @@ module L
 			end
 			
 			def do_compile_file(f, obj)
-				c = Rub::Command.new(compile_command(f, obj))
+				c = R::Command.new(compile_command(f, obj))
 				c.run
 				c
 			end
@@ -139,10 +142,10 @@ EOF
 		@compiler = new_compiler
 		
 		def self.compile(src, compiler: @compiler)
-			src = Rub::Tool.make_array src
+			src = R::Tool.make_array src
 		
 			src.map! do |s|
-				out = Rub::Env.out_dir + 'l/c/objects/' + (Pathname.new(s).expand_path.to_s[1..-1] + '.o')
+				out = R::Env.out_dir + 'l/c/objects/' + (Pathname.new(s).expand_path.to_s[1..-1] + '.o')
 				
 				::C.generator(s, compiler.compile_command(s, out), out, desc:"Compiling")
 			end.flatten!

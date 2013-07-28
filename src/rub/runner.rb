@@ -26,7 +26,7 @@ require 'sysexits'
 
 require 'rub/environment'
 
-module Rub
+module R
 	module Runner
 		@@loaded = {}
 	
@@ -62,6 +62,6 @@ module C
 			raise "\"#{dir}\" does not exist!"
 		end
 	
-		Rub::Runner.doFile(dir)
+		R::Runner.doFile(dir)
 	end
 end

@@ -25,7 +25,7 @@
 require 'digest/sha1'
 require 'pathname'
 
-module Rub
+module R
 	class << self
 		attr_reader :targets
 	end
@@ -48,7 +48,7 @@ module Rub
 		
 		def register
 			output.map!{|f| f.expand_path}
-			output.each{|d| Rub.targets[d] = self }
+			output.each{|d| R.targets[d] = self }
 		end
 		
 		def clean?
@@ -59,15 +59,15 @@ module Rub
 			Digest::SHA1.digest(
 				[
 					output.map{|f| Digest::SHA1.file(f).to_s }.join,
-					input .map{|i| Rub::get_target(i).hash   }.join,
+					input .map{|i| R::get_target(i).hash   }.join,
 				].join
 			)
 		end
 		
 		def build
-			input.map!{|f| Pathname.new(f).expand_path}
+			input.map!{|f| Pathname.new(f).expand_path }
 			
-			input.map{|f| [f, Rub.get_target(f)]}.each do |f, i| 
+			input.map{|f| [f, R.get_target(f)]}.each do |f, i| 
 				i.build
 			end
 		end
@@ -84,11 +84,11 @@ module Rub
 		def clean
 			output.all?{|f| f.exist?} or return
 			
-			 Rub::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash
+			 R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash
 		end
 		
 		def clean?
-			output.all?{|f| f.exist?} and Rub::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash
+			output.all?{|f| f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash
 		end
 	end
 	
