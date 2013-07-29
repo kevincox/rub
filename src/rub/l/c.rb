@@ -26,10 +26,9 @@ require 'tempfile'
 
 module L
 	module C
-		class << self
-			attr_accessor :compiler
-			attr_reader   :compilers
-		end
+		cattr_accessor :compiler
+		cattr_reader   :compilers
+		
 		@compilers = {}
 		@prefered_compiler = nil
 	
@@ -42,68 +41,78 @@ module L
 		OPTIMIZE_FOR_SPEED = :speed
 	
 		class Options
+			cattr_accessor :optimize, :optimize_for
+			cattr_accessor :debug, :profile
+		
+			cattr_reader :include_dirs, :define
+			
+			@@debug = @@profile = (not not D[:debug])
+			@@optimize = @@debug ? :none : :full
+			
+			@@include_dirs = []
+			@@define = {
+				@@debug ? 'DEBUG' : 'NDEBUG' => true,
+			}
+			
 			attr_accessor :optimize, :optimize_for
 			attr_accessor :debug, :profile
 		
 			attr_reader :include_dirs, :define
 			
 			def initialize
-				@debug = @profile = (not not D[:debug])
-				@optimize = @debug ? :none : :full
+				@optimize     = @@optimize
+				@optimize_for = @@optimize_for
 				
-				@include_dirs = []
-				@define = {
-					@debug ? 'DEBUG' : 'NDEBUG' => true,
-				}
+				@debug   = @@debug
+				@profile = @@profile
+				
+				@include_dirs = @@include_dirs.dup
+				@define       = @@define.dup
 			end
 		end
 		
-		class Compiler
-			attr_reader :name
-			attr_reader :options
-			
-			def initialize
-				@name = :default
-			
-				@options = Options.new
+		module Compiler
+			def self.name
+				:default
 			end
 			
-			def available?
+			def self.available?
 				false
 			end
 			
-			def compile_command(src, obj)
+			def self.compile_command(src, obj, options: Options.new)
 				raise "Not implemented!"
 			end
 			
-			def do_compile_file(f, obj)
-				c = R::Command.new(compile_command(f, obj))
+			def self.do_compile_file(f, obj, options: Options.new)
+				compile_command(f, obj)
+				c = R::Command.new(compile_command(f, obj, options: options))
 				c.run
 				c
 			end
 			
-			def do_compile_string(str, obj)
+			def self.do_compile_string(str, obj, options: Options.new)
 				f = Tempfile.new(['rub.l.c.testcompile', '.c'])
 				f.write(str)
 				f.close
-				c = do_compile_file(f.path, obj)
+				c = do_compile_file(f.path, obj, options: options)
 				f.unlink
 				c
 			end
 			
-			def test_compile(src)
-				c = do_compile_file(src, File::NULL)
+			def self.test_compile(src, options: Options.new)
+				c = do_compile_file(src, File::NULL, options: options)
 				#p c.success?, c.stdin, c.stdout, c.stderr
 				c.success?
 			end
 			
-			def test_compile_string(src)
-				c = do_compile_string(src, File::NULL)
+			def self.test_compile_string(src, options: Options.new)
+				c = do_compile_string(src, File::NULL, options: options)
 				#p c.success?, c.stdin, c.stdout, c.stderr
 				c.success?
 			end
 			
-			def test_macro(name)
+			def self.test_macro(name)
 				test_compile_string <<EOF
 #ifndef #{name}
 #error "#{name}Not Defined"
@@ -112,12 +121,12 @@ EOF
 			end
 		end
 		
-		cdir = Pathname.new(__FILE__).realpath.dirname + "c/compiler/"
+		R::Tool.load_dir(Pathname.new(__FILE__).realpath.dirname+"c/compiler/")
+		
 		tdir = Pathname.new(__FILE__).realpath.dirname + "c/test/"
-		cdir.children.each {|c| load c}
 		
 		@compilers.keep_if do |n, c|
-			c = c.new
+			c.available? or next false
 			
 			r = (
 					c.test_compile(tdir+'basic.c') and
@@ -134,14 +143,11 @@ EOF
 		
 		@prefered_compiler = D[:l_c_compiler].find {|c| @compilers.has_key? c}
 		
-		def self.new_compiler(name=@prefered_compiler)
-			klass = @compilers[name]
-			return klass ? klass.new : nil
+		def self.compiler(name=@prefered_compiler)
+			@compilers[name]
 		end
 		
-		@compiler = new_compiler
-		
-		def self.compile(src, compiler: @compiler)
+		def self.compile(src, compiler: compiler, options: Options.new)
 			src = R::Tool.make_array src
 		
 			src.map! do |s|

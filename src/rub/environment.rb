@@ -26,13 +26,10 @@ require 'pathname'
 
 module R
 	module Env
-		class << self
-			attr_accessor :cmd_dir
-
-			attr_accessor :out_dir
+		cattr_accessor :cmd_dir
+		cattr_accessor :out_dir
 			
-			attr_reader :global_cache
-		end
+		cattr_reader :global_cache
 		
 		@cmd_dir = Pathname.pwd
 		
@@ -50,6 +47,8 @@ module R
 			end
 			
 			@out_dir = @src_dir + 'build/'
+			
+			@src_dir
 		end
 		
 		@global_cache = Pathname(Dir.home())+".cache/rub/cache/"

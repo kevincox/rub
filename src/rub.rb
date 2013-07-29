@@ -30,6 +30,7 @@ require 'pp'
 $LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
 
 require 'rub/version'
+require 'rub/tool'
 
 require 'rub/environment'
 require 'rub/commandline'
