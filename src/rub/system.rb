@@ -24,6 +24,7 @@
 
 module R
 	class Command
+		attr_accessor :cmd
 		attr_reader   :env
 	
 		attr_accessor :stdin
@@ -34,7 +35,7 @@ module R
 		attr_accessor :clearenv
 		attr_accessor :mergeouts
 	
-		def initialize(cmd)
+		def initialize(cmd=[])
 			@env = {}
 			
 			@stdin  = ""
@@ -43,7 +44,7 @@ module R
 			
 			@opt = {}
 			
-			@cmd = cmd.map{|a| a.to_s}
+			@cmd = cmd
 		end
 		
 		def start
@@ -55,7 +56,7 @@ module R
 		
 			args = [
 				@env,
-				*@cmd,
+				*@cmd.map{|a| a.to_s},
 				:unsetenv_others=>@clearenv,
 				:in =>@stdinr,
 				:out=>@stdoutw,
@@ -82,10 +83,12 @@ module R
 		end
 		
 		def block
-			pid, @status = Process.wait2 @pid
-			
 			@stdout = @stdoutr.read
 			@stderr = @stderrr.read
+			
+			#puts "Blocking on #{@pid} #{@cmd.join' '}"
+			pid, @status = Process.wait2 @pid
+			#puts "Done #{@cmd.join' '}"
 			
 			@stdoutr.close
 			@stderrr.close
@@ -98,12 +101,13 @@ module R
 		end
 	end
 	
-	def self.run(cmd, desc)
+	def self.run(cmd, desc, importance: :high)
 		cmd = cmd.map{|a| a.to_s}
 	
 		bs = BuildStep.new
 		bs.desc = desc
 		bs.cmd  = cmd
+		bs.importance = importance
 		
 		c = Command.new(cmd)
 		c.mergeouts = true
@@ -124,11 +128,26 @@ module R
 		attr_accessor :out
 		attr_accessor :status
 		
+		attr_reader :importance
+		def importance=(i)
+			@importance = i
+			case i
+				when :low
+					@importancei = 1
+				when :med
+					@importancei = 2
+				when :high
+					@importancei = 3
+			end
+		end
+		
 		def initialize(cmd=[], out="", desc="", status=0)
 			@cmd    = cmd
 			@out    = out
 			@desc   = desc
 			@status = status
+			
+			importance = :high
 		end
 		
 		def format_cmd(cmd)
@@ -142,7 +161,9 @@ module R
 		end
 		
 		def print
-			puts "\e[1m#@desc\e[0m"
+			@importancei < 2 and return
+		
+			puts "\e[#{status==0 ? '' : '31;'}1m#{@desc}\e[0m"
 			puts format_cmd @cmd
 			Kernel::print @out
 		end

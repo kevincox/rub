@@ -79,21 +79,21 @@ module L
 				c.success?
 			end
 			
-			name_map = {
+			@@name_map = {
 				exe:    '%s',
 				shared: 'lib%s.so',
 				static: 'lib%s.a',
 			}
 			
 			def self.full_name(base, type)
-				name_map[type] % base
+				@@name_map[type] % base
 			end
 			
 			def self.find_lib(name, options: Options.new)
-				pp whereis = ::C::find_command('whereis') or return nil
+				whereis = ::C::find_command('whereis') or return nil
 				
 				c = R::Command.new [whereis, '-b', "lib#{name}"]
-				pp c.run or return nil
+				c.run or return nil
 				
 				l = c.stdout.split.drop(1).keep_if do |l|
 					options.static ? l.end_with?('.a') : l.end_with?('.so')
@@ -112,19 +112,30 @@ module L
 		D[:l_ld_linker].map! {|l| l.to_sym}
 		@prefered_linker = D[:l_ld_linker].find {|l| @linkers.has_key? l}
 		
-		def self.linker(name=@prefered_linker)
-			@linkers[name]
+		def self.linker(name=nil)
+			name ||= @prefered_linker
+		
+			if name.is_a? Symbol
+				@linkers[name]
+			else
+				name
+			end
 		end
 		
-		def self.link(src, libs, name, target: :exe, linker: linker, options: Options.new)
+		def self.link(src, libs, name, format: :exe, linker: @prefered_linker, options: Options.new)
 			src  = R::Tool.make_array_paths src
 			libs = R::Tool.make_array libs
 			
-			libfs = libs.map {|l| linker.find_lib l}
+			linker = linker linker
 			
-			out = linker.full_name name
+			libfs = libs.map {|l| linker.find_lib l or raise "Can't find library #{l}."}
 			
-			C::generator(src+libfs, linker.link_command(src, libs, out, target: target, options: options), out)
+			out = linker.full_name name, format
+			out = R::Env.out_dir + 'l/ld/' + out
+			
+			::C::generator(src+libfs, linker.link_command(src, libs, out, format: format, options: options), out)
+			
+			out
 		end
 	end
 end

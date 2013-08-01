@@ -22,13 +22,10 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/c'
-
 module L
-	module C
-		CompilerGCC = Compiler.clone
-		module CompilerGCC
-			
+	module LD
+		LinkerGCC = Linker.clone
+		module LinkerGCC
 			def self.name
 				:gcc
 			end
@@ -38,57 +35,74 @@ module L
 			end
 			
 			def self.find
-				@exe and return @exe
-			
-				@exe = ::C.find_command 'gcc'
+				::C.find_command 'gcc'
 			end
 			
-			def self.linker
-				:gcc
-			end
+			def self.link_command(files, libs, out, format: :exe, options: nil)
+				files = R::Tool.make_array_paths files
+				libs  = R::Tool.make_array libs
+				out = Pathname.new out
+				options ||= Options.new
 			
-			@@o_flags = {
-				:none=>'-O0',
-				:some=>'-O1',
-				:full=>'-O2',
-				:max =>'-O3',
-			}
-			@@of_flags = {
-				nil=>[],
-				:speed=>'-Ofast',
-				:size=>'-Os',
-			}
-			
-			def self.generate_flags(options)
-				f = []
+				c = [find, "-o#{out}"]
 				
-				f << (@@o_flags[options.optimize    ] || [])
-				f << (@@o_flags[options.optimize_for] || [])
+				c << options.args
 				
-				f << options.include_dirs.map do |d|
-					"-I#{d}"
-				end
-				f << options.define.map do |k, v|
-					# -Dk if v is true else -Dk=v.
-					"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
+				c << case format
+					when :exe
+						[]
+					when :shared
+						['-shared']
+					else
+						raise "Unknown/unsupported output #{format}."
 				end
 				
-				f.flatten!
+				c << case options.optimize
+					when :none
+						'-O0'
+					when :some
+						'-O0'
+					when :full
+						'-O1'
+					when :max
+						'-O9'
+					else
+						raise "Invalid optimization level #{options.optimize}."
+				end
+				
+				c << if options.static
+					'-static'
+				else
+					[]
+				end
+				
+				c << options.library_dirs.map{|d| "-L#{d}"}
+				
+				c << libs.map{|l| "-l#{l}" }
+				c << files
+				
+				c.flatten
 			end
 			
-			def self.compile_command(src, obj, options: Options.new)
-				[find, '-c', *generate_flags(options), "-o#{obj}", *src]
-			end
-			
-			def self.do_compile_string(str, obj, options: Options.new)
-				c = R::Command.new [find, '-c', '-xc', *generate_flags(options), '-o', obj, '-']
-				c.stdin = str
-				c.run
-				c
-			end
+			#def self.find_lib(name, options: Options.new)
+			#	options = options.deep_clone
+			#	options.optimize = :none
+			#	options.args << '-t'
+			#	
+			#	
+			#	if options.static # The default way is best for static linking.
+			#		return Linker.find_lib(name, options: options)
+			#	end
+			#	
+			#	pp c = do_link([], [name], File::NULL, options: options)
+			#	
+			#	c.success? or return nil
+			#	
+			#	c.stdout.match(Regexp.new"^-l#{name} \\((.*)\\)$") do |m|
+			#		m[1]
+			#	end
+			#end
 		end
-		L::C.compilers[:gcc] = CompilerGCC
-		
-		D.push(:l_c_compiler, :gcc)
+		L::LD.linkers[:gcc] = LinkerGCC
 	end
 end

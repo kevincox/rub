@@ -57,7 +57,7 @@ module R
 				return
 			end
 			
-			R::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories")
+			R::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories", importance: :low)
 			@cmd.all?{|c| R::run(c, "#@action #{@output.join", "}")} or exit 1
 			
 			clean

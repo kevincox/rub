@@ -29,6 +29,7 @@ require 'rub/targetgenerator'
 
 module C
 	def self.path(p)
+		#raise "crash me" if caller.length > 500
 		p = p.to_s
 		
 		p = case p[0]
@@ -83,6 +84,11 @@ module C
 		
 		t
 	end
+	
+	##### Create default tags.
+	::C.tag('=all')
+	::C.tag('=install')
+	::C.tag('=none')
 	
 	def self.generator(src, cmd, out, desc: false)
 		t = R::TargetGenerator.new

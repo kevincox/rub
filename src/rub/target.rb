@@ -31,11 +31,17 @@ module R
 	end
 	
 	@targets = {}
+	@sources = {}
 	
+	def self.find_target(path)
+		path = C.path(path)
+		
+		t = @targets[path]
+	end
 	def self.get_target(path)
 		path = C.path(path)
 		
-		t = @targets[path] or TargetSource.new(path)
+		find_target(path) or @sources[path] ||= TargetSource.new(path)
 	end
 	
 	class Target
@@ -47,8 +53,14 @@ module R
 		end
 		
 		def register
-			output.map!{|f| f.expand_path}
-			output.each{|d| R.targets[d] = self }
+			output.map do |f|
+				f.expand_path
+			end.each do |d|
+				if R.targets[d]
+					$stderr.puts "Warning: #{d} can be built two ways."
+				end
+				R.targets[d] = self
+			end
 		end
 		
 		def clean?
@@ -57,19 +69,34 @@ module R
 		
 		def hash
 			Digest::SHA1.digest(
-				[
-					output.map{|f| Digest::SHA1.file(f).to_s }.join,
-					input .map{|i| R::get_target(i).hash   }.join,
-				].join
+				(
+					output.map{|f| Digest::SHA1.file(f).to_s } +
+					['-'] +
+					input .map{|i| R::get_target(i).hash     }
+				).join
 			)
 		end
 		
 		def build
-			input.map!{|f| Pathname.new(f).expand_path }
-			
-			input.map{|f| [f, R.get_target(f)]}.each do |f, i| 
+			case @built
+				when :built
+					return
+				when :started
+					$stderr.puts "Warning: Circular dependency involving #{output.join(', ')}"
+					return
+			end
+			@built = :started
+		
+			input.map do |f|
+				Pathname.new(f).expand_path
+			end.map do |f|
+				[f, R.get_target(f)]
+			end.each do |f, i| 
+				#puts "Building #{f}"
 				i.build
 			end
+			
+			@built = :built
 		end
 	end
 	
@@ -100,9 +127,7 @@ module R
 		end
 		
 		def hash
-			@hashcache and return @hashcache
-			
-			@hashcache = Digest::SHA1.file(output[0]).to_s
+			@hashcache ||= Digest::SHA1.file(output[0]).to_s
 		end
 		
 		def build

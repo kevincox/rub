@@ -83,19 +83,24 @@ module L
 				c.flatten
 			end
 			
-			def self.find_lib(name, type: :all, options: Options.new)
-				options = options.deep_clone
-				options.optimize = :none
-				options.args << '-t'
-				
-				pp c = do_link([], [name], File::NULL, options: options)
-				
-				c.success? or return nil
-				
-				c.stdout.match(Regexp.new"^-l#{name} \\((.*)\\)$") do |m|
-					m[1]
-				end
-			end
+			#def self.find_lib(name, options: Options.new)
+			#	options = options.deep_clone
+			#	options.optimize = :none
+			#	options.args << '-t'
+			#	
+			#	
+			#	if options.static # The default way is best for static linking.
+			#		return Linker.find_lib(name, options: options)
+			#	end
+			#	
+			#	pp c = do_link([], [name], File::NULL, options: options)
+			#	
+			#	c.success? or return nil
+			#	
+			#	c.stdout.match(Regexp.new"^-l#{name} \\((.*)\\)$") do |m|
+			#		m[1]
+			#	end
+			#end
 		end
 		L::LD.linkers[:ld] = LinkerLD
 		

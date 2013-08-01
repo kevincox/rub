@@ -32,6 +32,7 @@ module L
 			what.map!{|f| Pathname.new(f).expand_path}
 			where = Pathname.new(where).expand_path(D[:prefix])
 			
+			at = ::C.tag('=all')
 			it = ::C.tag('=install')
 			
 			what.map do |f|
@@ -47,6 +48,7 @@ module L
 			what.each do |f|
 				out = where+f.basename
 				::C.generator(f, ['install', "-D", f, out], out, desc: "Installing").each do |o|
+					at.require(f)
 					it.require(o)
 				end
 			end
