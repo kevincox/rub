@@ -161,12 +161,22 @@ EOF
 		
 		def self.compile(src, compiler: @prefered_compiler, options: Options.new)
 			src = R::Tool.make_array_paths src
+			headers = []
+			src.keep_if do |s|
+				if s.extname.match /[H]/i
+				   headers << s
+				   false
+				else
+					true
+				end
+			end
+			
 			compiler = compiler compiler
 		
 			src.map! do |s|
 				out = R::Env.out_dir + 'l/c/objects/' + (Pathname.new(s).expand_path.to_s[1..-1] + '.o')
 				
-				TargetCSource.new(s, [], options)
+				TargetCSource.new(s, headers, options)
 				::C.generator(s, compiler.compile_command(s, out), out, desc:"Compiling")
 			end.flatten!
 		end
