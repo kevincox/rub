@@ -22,35 +22,35 @@
 #                                                                              #
 ################################################################################
 
+require 'rub'
+
 D.resolve_path :pefix
 
-module L
-	module Util
-		def self.install(what, where)
-			what = R::Tool.make_array what
-			
-			what.map!{|f| Pathname.new(f).expand_path}
-			where = Pathname.new(where).expand_path(D[:prefix])
-			
-			at = ::C.tag('=all')
-			it = ::C.tag('=install')
-			
-			what.map do |f|
-				f.directory? or next f
-			
-				c = []
-				f.find do |e|
-					e.file? and c << e
-				end
-				c
+module L::Util
+	def self.install(what, where)
+		what = R::Tool.make_array what
+		
+		what.map!{|f| Pathname.new(f).expand_path}
+		where = Pathname.new(where).expand_path(D[:prefix])
+		
+		at = ::C.tag('=all')
+		it = ::C.tag('=install')
+		
+		what.map do |f|
+			f.directory? or next f
+		
+			c = []
+			f.find do |e|
+				e.file? and c << e
 			end
-			what.flatten!
-			what.each do |f|
-				out = where+f.basename
-				::C.generator(f, ['install', "-D", f, out], out, desc: "Installing").each do |o|
-					at.require(f)
-					it.require(o)
-				end
+			c
+		end
+		what.flatten!
+		what.each do |f|
+			out = where+f.basename
+			::C.generator(f, ['install', "-D", f, out], out, desc: "Installing").each do |o|
+				at.require(f)
+				it.require(o)
 			end
 		end
 	end

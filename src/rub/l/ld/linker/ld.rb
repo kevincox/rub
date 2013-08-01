@@ -22,88 +22,88 @@
 #                                                                              #
 ################################################################################
 
-module L
-	module LD
-		LinkerLD = Linker.clone
-		module LinkerLD
-			def self.name
-				:ld
-			end
-			
-			def self.available?
-				not not find
-			end
-			
-			def self.find
-				::C.find_command 'ld'
-			end
-			
-			def self.link_command(files, libs, out, format: :exe, options: Options.new)
-				files = R::Tool.make_array_paths files
-				libs  = R::Tool.make_array libs
-				out = Pathname.new out
-			
-				c = [find, "-o#{out}"]
-				
-				c << options.args
-				
-				c << case format
-					when :exe
-						[]
-					when :shared
-						['-shared']
-					else
-						raise "Unknown/unsupported output #{format}."
-				end
-				
-				c << case options.optimize
-					when :none
-						'-O0'
-					when :some
-						'-O0'
-					when :full
-						'-O1'
-					when :max
-						'-O9'
-					else
-						raise "Invalid optimization level #{options.optimize}."
-				end
-				
-				c << if options.static
-					'-static'
-				else
-					[]
-				end
-				
-				c << options.library_dirs.map{|d| "-L#{d}"}
-				
-				c << libs.map{|l| "-l#{l}" }
-				c << files
-				
-				c.flatten
-			end
-			
-			#def self.find_lib(name, options: Options.new)
-			#	options = options.deep_clone
-			#	options.optimize = :none
-			#	options.args << '-t'
-			#	
-			#	
-			#	if options.static # The default way is best for static linking.
-			#		return Linker.find_lib(name, options: options)
-			#	end
-			#	
-			#	pp c = do_link([], [name], File::NULL, options: options)
-			#	
-			#	c.success? or return nil
-			#	
-			#	c.stdout.match(Regexp.new"^-l#{name} \\((.*)\\)$") do |m|
-			#		m[1]
-			#	end
-			#end
+require 'rub/l/ld'
+
+module L::LD
+	LinkerLD = Linker.clone
+	module LinkerLD
+		def self.name
+			:ld
 		end
-		L::LD.linkers[:ld] = LinkerLD
 		
-		D.push(:l_ld_linker, :ld)
+		def self.available?
+			not not find
+		end
+		
+		def self.find
+			::C.find_command 'ld'
+		end
+		
+		def self.link_command(files, libs, out, format: :exe, options: Options.new)
+			files = R::Tool.make_array_paths files
+			libs  = R::Tool.make_array libs
+			out = Pathname.new out
+		
+			c = [find, "-o#{out}"]
+			
+			c << options.args
+			
+			c << case format
+				when :exe
+					[]
+				when :shared
+					['-shared']
+				else
+					raise "Unknown/unsupported output #{format}."
+			end
+			
+			c << case options.optimize
+				when :none
+					'-O0'
+				when :some
+					'-O0'
+				when :full
+					'-O1'
+				when :max
+					'-O9'
+				else
+					raise "Invalid optimization level #{options.optimize}."
+			end
+			
+			c << if options.static
+				'-static'
+			else
+				[]
+			end
+			
+			c << options.library_dirs.map{|d| "-L#{d}"}
+			
+			c << libs.map{|l| "-l#{l}" }
+			c << files
+			
+			c.flatten
+		end
+		
+		#def self.find_lib(name, options: Options.new)
+		#	options = options.deep_clone
+		#	options.optimize = :none
+		#	options.args << '-t'
+		#	
+		#	
+		#	if options.static # The default way is best for static linking.
+		#		return Linker.find_lib(name, options: options)
+		#	end
+		#	
+		#	pp c = do_link([], [name], File::NULL, options: options)
+		#	
+		#	c.success? or return nil
+		#	
+		#	c.stdout.match(Regexp.new"^-l#{name} \\((.*)\\)$") do |m|
+		#		m[1]
+		#	end
+		#end
 	end
+	L::LD.linkers[:ld] = LinkerLD
+	
+	D.push(:l_ld_linker, :ld)
 end

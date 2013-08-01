@@ -26,26 +26,24 @@ require 'sysexits'
 
 require 'rub/environment'
 
-module R
-	module Runner
-		@@loaded = {}
-	
-		def self.doFile(f)
-			fs = f.to_s
-			if @@loaded[fs]
-				return
-			end
-		
-			if not f.exist?
-				$stderr.puts "\"#{f}\" is not readable!"
-				Sysexits.exit :noinput
-			end
-			
-			@@loaded[fs] = true
-			
-			Dir.chdir f.dirname
-			load fs
+module R::Runner
+	@@loaded = {}
+
+	def self.doFile(f)
+		fs = f.to_s
+		if @@loaded[fs]
+			return
 		end
+	
+		if not f.exist?
+			$stderr.puts "\"#{f}\" is not readable!"
+			Sysexits.exit :noinput
+		end
+		
+		@@loaded[fs] = true
+		
+		Dir.chdir f.dirname
+		load fs
 	end
 end
 

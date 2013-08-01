@@ -22,6 +22,8 @@
 #                                                                              #
 ################################################################################
 
+require 'rub'
+
 class Module
 	def cattr_reader(*name)
 		name.each do |n|
@@ -78,30 +80,28 @@ class Object
   end
 end
 
-module R
-	module Tool
-		def self.make_array(a)
-			if a.is_a? Array
-				a.dup
-			else
-				[a]
-			end
+module R::Tool
+	def self.make_array(a)
+		if a.is_a? Array
+			a.dup
+		else
+			[a]
 		end
+	end
+	
+	def self.make_array_paths(a)
+		if a.is_a? Array
+			a.dup
+		else
+			[a]
+		end.map do |p|
+			Pathname.new p
+		end
+	end
+	
+	def self.load_dir(d)
+		d = Pathname.new(d)
 		
-		def self.make_array_paths(a)
-			if a.is_a? Array
-				a.dup
-			else
-				[a]
-			end.map do |p|
-				Pathname.new p
-			end
-		end
-		
-		def self.load_dir(d)
-			d = Pathname.new(d)
-			
-			d.children.each {|i| load i}
-		end
+		d.children.each {|i| load i}
 	end
 end

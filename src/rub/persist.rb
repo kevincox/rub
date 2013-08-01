@@ -22,6 +22,8 @@
 #                                                                              #
 ################################################################################
 
+require 'rub'
+
 module R
 	class << self
 		attr_reader :ppersistant

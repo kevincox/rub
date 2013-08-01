@@ -24,36 +24,34 @@
 
 require 'pathname'
 
-module R
-	module Env
-		cattr_accessor :cmd_dir
-		cattr_accessor :out_dir
+module R::Env
+	cattr_accessor :cmd_dir
+	cattr_accessor :out_dir
+		
+	cattr_reader :global_cache
+	
+	@cmd_dir = Pathname.pwd
+	
+	def self.src_dir
+		@src_dir and return @src_dir
+	
+		@src_dir = @cmd_dir
+		while not (@src_dir+'root.rub').exist?
+			@src_dir = @src_dir.parent
 			
-		cattr_reader :global_cache
-		
-		@cmd_dir = Pathname.pwd
-		
-		def self.src_dir
-			@src_dir and return @src_dir
-		
-			@src_dir = @cmd_dir
-			while not (@src_dir+'root.rub').exist?
-				@src_dir = @src_dir.parent
-				
-				if @src_dir.root?
-					$stderr.puts('root.rub not found.  Make sure you are in the source directory.')
-					exit 1
-				end
+			if @src_dir.root?
+				$stderr.puts('root.rub not found.  Make sure you are in the source directory.')
+				exit 1
 			end
-			
-			@out_dir = @src_dir + 'build/'
-			
-			@src_dir
 		end
 		
-		@global_cache = Pathname(Dir.home())+".cache/rub/cache/"
-		def self.project_cache
-			@out_dir + "cache/"
-		end
+		@out_dir = @src_dir + 'build/'
+		
+		@src_dir
+	end
+	
+	@global_cache = Pathname(Dir.home())+".cache/rub/cache/"
+	def self.project_cache
+		@out_dir + "cache/"
 	end
 end

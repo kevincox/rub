@@ -24,71 +24,69 @@
 
 require 'rub/l/c'
 
-module L
-	module C
-		CompilerGCC = Compiler.clone
-		module CompilerGCC
-			
-			def self.name
-				:gcc
-			end
-			
-			def self.available?
-				not not find
-			end
-			
-			def self.find
-				@exe and return @exe
-			
-				@exe = ::C.find_command 'gcc'
-			end
-			
-			def self.linker
-				:gcc
-			end
-			
-			@@o_flags = {
-				:none=>'-O0',
-				:some=>'-O1',
-				:full=>'-O2',
-				:max =>'-O3',
-			}
-			@@of_flags = {
-				nil=>[],
-				:speed=>'-Ofast',
-				:size=>'-Os',
-			}
-			
-			def self.generate_flags(options)
-				f = []
-				
-				f << (@@o_flags[options.optimize    ] || [])
-				f << (@@o_flags[options.optimize_for] || [])
-				
-				f << options.include_dirs.map do |d|
-					"-I#{d}"
-				end
-				f << options.define.map do |k, v|
-					# -Dk if v is true else -Dk=v.
-					"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
-				end
-				
-				f.flatten!
-			end
-			
-			def self.compile_command(src, obj, options: Options.new)
-				[find, '-c', *generate_flags(options), "-o#{obj}", *src]
-			end
-			
-			def self.do_compile_string(str, obj, options: Options.new)
-				c = R::Command.new [find, '-c', '-xc', *generate_flags(options), '-o', obj, '-']
-				c.stdin = str
-				c.run
-				c
-			end
-		end
-		L::C.compilers[:gcc] = CompilerGCC
+module L::C
+	CompilerGCC = Compiler.clone
+	module CompilerGCC
 		
-		D.push(:l_c_compiler, :gcc)
+		def self.name
+			:gcc
+		end
+		
+		def self.available?
+			not not find
+		end
+		
+		def self.find
+			@exe and return @exe
+		
+			@exe = ::C.find_command 'gcc'
+		end
+		
+		def self.linker
+			:gcc
+		end
+		
+		@@o_flags = {
+			:none=>'-O0',
+			:some=>'-O1',
+			:full=>'-O2',
+			:max =>'-O3',
+		}
+		@@of_flags = {
+			nil=>[],
+			:speed=>'-Ofast',
+			:size=>'-Os',
+		}
+		
+		def self.generate_flags(options)
+			f = []
+			
+			f << (@@o_flags[options.optimize    ] || [])
+			f << (@@o_flags[options.optimize_for] || [])
+			
+			f << options.include_dirs.map do |d|
+				"-I#{d}"
+			end
+			f << options.define.map do |k, v|
+				# -Dk if v is true else -Dk=v.
+				"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
+			end
+			
+			f.flatten!
+		end
+		
+		def self.compile_command(src, obj, options: Options.new)
+			[find, '-c', *generate_flags(options), "-o#{obj}", *src]
+		end
+		
+		def self.do_compile_string(str, obj, options: Options.new)
+			c = R::Command.new [find, '-c', '-xc', *generate_flags(options), '-o', obj, '-']
+			c.stdin = str
+			c.run
+			c
+		end
 	end
+	L::C.compilers[:gcc] = CompilerGCC
+	
+	D.push(:l_c_compiler, :gcc)
 end
