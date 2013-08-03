@@ -32,7 +32,7 @@ module L::LD
 		end
 		
 		def self.available?
-			not not find
+			!!find
 		end
 		
 		def self.find

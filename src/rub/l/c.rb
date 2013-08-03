@@ -47,7 +47,7 @@ module L::C
 	
 		cattr_reader :include_dirs, :define
 		
-		@@debug = @@profile = (not not D[:debug])
+		@@debug = @@profile = !!D[:debug]
 		@@optimize = @@debug ? :none : :full
 		
 		@@include_dirs = []
@@ -180,7 +180,7 @@ EOF
 		end.flatten!
 	end
 	
-	class TargetCSource < ::R::Target
+	class TargetCSource < R::Target
 		#def self.initialize
 		#	@@inited and return
 		#	
@@ -242,7 +242,11 @@ EOF
 		end
 		
 		def output
-			[@f]
+			Set[@f]
+		end
+		
+		def build
+			build_dependancies
 		end
 	end
 	

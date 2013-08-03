@@ -33,7 +33,7 @@ module L::C
 		end
 		
 		def self.available?
-			not not find
+			!!find
 		end
 		
 		def self.find

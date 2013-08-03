@@ -58,14 +58,26 @@ module C
 		attr_reader :output, :input
 		
 		def initialize(t)
-			@output = [t]
-			@input  = []
+			@output = Set[t]
+			@input  = Set[]
 		end
 		
 		def require(f)
 			f = R::Tool.make_array f
 			
-			input.concat f.map!{|e| C.path(e)}
+			input.merge(f.map!{|e| Pathname.new(e).expand_path})
+		end
+		
+		def hash_contents
+			Digest::SHA1.digest(
+				(
+					input.map{|i| R::get_target(i).hash_contents }
+				).join
+			)
+		end
+		
+		def build
+			input.each{|i| R::get_target(i).build }
 		end
 	end
 	private_constant :TargetTag
@@ -97,7 +109,7 @@ module C
 		p = R::Env.cmd_dir + t
 		p = p.expand_path
 		
-		R.targets[p] || Tag.new(p)
+		R.find_target(p) || Tag.new(p)
 	end
 	
 	##### Create default tags.
@@ -135,8 +147,8 @@ module C
 		out = R::Tool.make_array(out)
 		cmd[0].is_a?(Array) or cmd = [cmd]
 		
-		t.input .concat(src)
-		t.output.concat(out)
+		t.input .merge(src)
+		t.output.merge(out)
 		t.add_cmds cmd
 		
 		t.register

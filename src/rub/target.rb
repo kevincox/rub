@@ -24,77 +24,123 @@
 
 require 'digest/sha1'
 require 'pathname'
+require 'set'
 
 module R
-	cattr_reader :targets
+	#cattr_reader :targets
 	
 	@targets = {}
 	@sources = {}
 	
+	# Find a target.
+	#
+	# Returns a target for +path+ or nil.
+	#
+	# @param path [Pathname,String] The path of the target.
+	# @return [Target,nil] The target.
 	def self.find_target(path)
-		path = C.path(path)
-		
-		t = @targets[path]
+		p = Pathname.new(path).expand_path
+		@targets[p] || @sources[p]
 	end
+	
+	# Get a target.
+	#
+	# This function get's an existing target if it exists or returns a new
+	# source target if there is no existing target to build it.
+	#
+	# @param path [Pathname,String] The path of the target.
+	# @return [Target,TargetSource]
 	def self.get_target(path)
 		path = C.path(path)
 		
 		find_target(path) or @sources[path] ||= TargetSource.new(path)
 	end
 	
-	class Target
-		def input
-			[]
+	# Set a target to a path.
+	#
+	# This function registers +target+ as a way to build +path+.
+	#
+	# @param path [Pathname,String] The path that is build by the target.
+	# @param target [Target] The target that builds +path+.
+	# @return [void]
+	#
+	# @see Target#register.
+	def self.set_target(path, target)
+		if find_target(path)
+			$stderr.puts "Warning: #{path} can be built two ways."
 		end
-		def output
-			[]
+		@targets[Pathname.new(path).expand_path] = target
+	end
+	
+	# The base target class.
+	#
+	# It has simple building logic and a way to register targets.  All
+	# targets should inherit from this class.
+	class Target
+		# Inputs
+		#
+		# @return [Set<Pathname>] The inputs this target depends on.
+		def input
+			Set.new
 		end
 		
+		# Outputs
+		#
+		# @return [Set<Pathname>] The outputs this target creates.
+		def output
+			Set.new
+		end
+		
+		# Register this target.
+		#
+		# Registers this target as building it's {#output}s.
+		#
+		# @return [void]
 		def register
 			output.map do |f|
 				f.expand_path
 			end.each do |d|
-				if R.targets[d]
-					$stderr.puts "Warning: #{d} can be built two ways."
-				end
-				R.targets[d] = self
+				R.set_target(d, self)
 			end
 		end
 		
+		# Is this target up to date?
 		def clean?
 			false
 		end
 		
-		def hash
+		# Return a hash of this target.
+		#
+		# This hash should represent a unique build environment and change if
+		# anything in that environment does.  This includes, but is not limited
+		# to:
+		# - Input files.
+		# - Output files.
+		# - Build commands.
+		#
+		# @return [String] the hash.
+		def hash_contents
 			Digest::SHA1.digest(
 				(
-					output.map{|f| Digest::SHA1.file(f).to_s } +
+					output.map{|f| Digest::SHA1.file(f).to_s      } +
 					['-'] +
-					input .map{|i| R::get_target(i).hash     }
+					input .map{|i| R::get_target(i).hash_contents }
 				).join
 			)
 		end
 		
-		def build
-			case @built
-				when :built
-					return
-				when :started
-					$stderr.puts "Warning: Circular dependency involving #{output.join(', ')}"
-					return
-			end
-			@built = :started
+		def build_dependancies
+			input.each{|i| R::get_target(i).build }
+		end
+		def build_self
+			raise "#build_self not implemented in #{self.class}."
+		end
 		
-			input.map do |f|
-				Pathname.new(f).expand_path
-			end.map do |f|
-				[f, R.get_target(f)]
-			end.each do |f, i| 
-				#puts "Building #{f}"
-				i.build
-			end
+		def build
+			build_dependancies
+			build_self
 			
-			@built = :built
+			nil
 		end
 	end
 	
@@ -102,18 +148,18 @@ module R
 		attr_reader :input, :output
 	
 		def initialize
-			@input  = []
-			@output = []
+			@input  = Set.new
+			@output = Set.new
 		end
 		
 		def clean
 			output.all?{|f| f.exist?} or return
 			
-			 R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash
+			 R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash_contents
 		end
 		
 		def clean?
-			output.all?{|f| f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash
+			output.all?{|f| f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash_contents
 		end
 	end
 	
@@ -121,17 +167,18 @@ module R
 		attr_reader :output
 		
 		def initialize(p)
-			@output = [p]
+			@src    = p
+			@output = Set[p]
 		end
 		
-		def hash
-			@hashcache ||= Digest::SHA1.file(output[0]).to_s
+		def hash_contents
+			@hashcache ||= Digest::SHA1.file(@src).to_s
 		end
 		
 		def build
-			if not output[0].exist?
+			if not @src.exist?
 				#p self
-				$stderr.puts "Error: source file #{output[0]} does not exist!"
+				$stderr.puts "Error: source file #{@src} does not exist!"
 				exit 1
 			end
 		end

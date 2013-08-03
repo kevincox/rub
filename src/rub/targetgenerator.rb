@@ -49,16 +49,14 @@ module R
 			cmds.map{|c| add_cmd c}
 		end
 		
-		def build
-			super
-			
+		def build_self
 			if clean?
 				#p "#{self.inspect}: Already clean, not rebuilding."
 				return
 			end
 			
 			R::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories", importance: :low)
-			@cmd.all?{|c| R::run(c, "#@action #{@output.join", "}")} or exit 1
+			@cmd.all?{|c| R::run(c, "#@action #{@output.to_a.join", "}")} or exit 1
 			
 			clean
 		end
