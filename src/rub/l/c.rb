@@ -159,7 +159,7 @@ EOF
 	end
 	
 	def self.compile(src, compiler: @prefered_compiler, options: Options.new)
-		src = R::Tool.make_array_paths src
+		src = R::Tool.make_set_paths src
 		headers = []
 		src.keep_if do |s|
 			if s.extname.match /[H]/i
@@ -255,8 +255,8 @@ EOF
 	                 options: Options.new,
 	                 loptions: nil
 	                )
-		src = R::Tool.make_array_paths src
-		lib = R::Tool.make_array lib
+		src = R::Tool.make_set_paths src
+		lib = R::Tool.make_set       lib
 		compiler = compiler compiler
 		
 		obj = compile(src, compiler: compiler, options: options)

@@ -63,9 +63,10 @@ module C
 		end
 		
 		def require(f)
-			f = R::Tool.make_array f
+			f = R::Tool.make_set f
+			f.map!{|e| Pathname.new(e).expand_path}
 			
-			input.merge(f.map!{|e| Pathname.new(e).expand_path})
+			input.merge(f)
 		end
 		
 		def hash_contents
@@ -143,8 +144,8 @@ module C
 		
 		desc and t.action = desc
 		
-		src = R::Tool.make_array(src)
-		out = R::Tool.make_array(out)
+		src = R::Tool.make_set_paths(src)
+		out = R::Tool.make_set_paths(out)
 		cmd[0].is_a?(Array) or cmd = [cmd]
 		
 		t.input .merge(src)

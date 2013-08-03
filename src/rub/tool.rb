@@ -22,6 +22,7 @@
 #                                                                              #
 ################################################################################
 
+require 'set'
 require 'pathname'
 
 require 'rub/modules'
@@ -98,16 +99,22 @@ module R::Tool
 	#   a[1].equal? b[1]           #=> true
 	#   
 	def self.make_array(a)
-		if a.is_a? Array
-			a.dup
+		if a.respond_to? :to_a
+			a.to_a.dup
 		else
 			[a]
 		end
 	end
+	# Make argument a set.
+	#
+	# @see make_array   
+	def self.make_set(a)
+		make_array(a).to_set
+	end
 	
 	# Make argument an array of Pathname objects.
 	#
-	# See R::Tool.make_array.
+	# @see make_array
 	#
 	#   a = Pathname.new('root.rub')    #=> #<Pathname:root.rub>
 	#   b = 'dir.rub'                   #=> "dir.rub"
@@ -116,13 +123,16 @@ module R::Tool
 	#   R::Tool.make_array_paths [a, b] #=> [#<Pathname:root.rub>, #<Pathname:dir.rub>]
 	#   R::Tool.make_array_paths b      #=> [#<Pathname:dir.rub>]
 	def self.make_array_paths(a)
-		if a.is_a? Array
-			a.dup
-		else
-			[a]
-		end.map do |p|
+		make_array(a).map do |p|
 			Pathname.new p
 		end
+	end
+	
+	# Make argument a Set of Pathname objects.
+	#
+	# @see make_array_paths
+	def self.make_set_paths(a)
+		make_array_paths(a).to_set
 	end
 	
 	# load every script in the directory +d+.

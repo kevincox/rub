@@ -40,8 +40,8 @@ module L::LD
 		end
 		
 		def self.link_command(files, libs, out, format: :exe, options: nil)
-			files = R::Tool.make_array_paths files
-			libs  = R::Tool.make_array libs
+			files = R::Tool.make_set_paths files
+			libs  = R::Tool.make_set       libs
 			out = Pathname.new out
 			options ||= Options.new
 		
@@ -80,7 +80,7 @@ module L::LD
 			c << options.library_dirs.map{|d| "-L#{d}"}
 			
 			c << libs.map{|l| "-l#{l}" }
-			c << files
+			c << files.to_a
 			
 			c.flatten
 		end

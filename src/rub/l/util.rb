@@ -28,15 +28,13 @@ D.resolve_path :pefix
 
 module L::Util
 	def self.install(what, where)
-		what = R::Tool.make_array what
-		
-		what.map!{|f| Pathname.new(f).expand_path}
+		what = R::Tool.make_set_paths what
 		where = Pathname.new(where).expand_path(D[:prefix])
 		
 		at = ::C.tag('=all')
 		it = ::C.tag('=install')
 		
-		what.map do |f|
+		what.map! do |f|
 			f.directory? or next f
 		
 			c = []
