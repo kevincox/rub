@@ -22,7 +22,9 @@
 #                                                                              #
 ################################################################################
 
-require 'rub'
+require 'pathname'
+
+require 'rub/modules'
 
 class Module
 	def cattr_reader(*name)
@@ -80,7 +82,21 @@ class Object
   end
 end
 
+# Utility functions aimed at library writers.
 module R::Tool
+	# Make argument an array.
+	#
+	# Turns a single item into an array or copies an array.
+	#
+	#   R::Tool.make_array  :item  #=> [:item]
+	#   R::Tool.make_array [:item] #=> [:item]
+	#   
+	#   a = ["string1", "string2"]
+	#   b = R::Tool.make_array a   #=> ["string1", "string2"]
+	#   a.equal? b                 #=> false
+	#   a[0].equal? b[0]           #=> true
+	#   a[1].equal? b[1]           #=> true
+	#   
 	def self.make_array(a)
 		if a.is_a? Array
 			a.dup
@@ -89,6 +105,16 @@ module R::Tool
 		end
 	end
 	
+	# Make argument an array of Pathname objects.
+	#
+	# See R::Tool.make_array.
+	#
+	#   a = Pathname.new('root.rub')    #=> #<Pathname:root.rub>
+	#   b = 'dir.rub'                   #=> "dir.rub"
+	#   R::Tool.make_array_paths a      #=> [#<Pathname:root.rub>]
+	#   R::Tool.make_array_paths [a]    #=> [#<Pathname:root.rub>]
+	#   R::Tool.make_array_paths [a, b] #=> [#<Pathname:root.rub>, #<Pathname:dir.rub>]
+	#   R::Tool.make_array_paths b      #=> [#<Pathname:dir.rub>]
 	def self.make_array_paths(a)
 		if a.is_a? Array
 			a.dup
@@ -99,6 +125,7 @@ module R::Tool
 		end
 	end
 	
+	# load every script in the directory +d+.
 	def self.load_dir(d)
 		d = Pathname.new(d)
 		

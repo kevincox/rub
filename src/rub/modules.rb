@@ -22,53 +22,32 @@
 #                                                                              #
 ################################################################################
 
-require 'rub'
+# Core Module
+#
+# Contains core Rub functions.
+module C
 
-module R
-	
-	# @!attribute [r] self.ppersistant
-	#   @return [Hash] The project cache.
-	cattr_reader :ppersistant
-	
-	# @!attribute [r] self.spersistant
-	#   @return [Hash] The system cache.
-	cattr_reader :spersistant
-	
-	ppersistfile = R::Env.project_cache + "persistant.marshal"
-	if ppersistfile.exist? && R::CommandLine.cache
-		@ppersistant = Marshal.load(File.new(ppersistfile, 'r').read)
-	else
-		@ppersistant = {}
-	end
-	
-	END {
-		File.new(ppersistfile, 'w').write(Marshal.dump(@ppersistant))
-	}
-	
-	spersistfile = R::Env.global_cache + "persistant.marshal"
-	if spersistfile.exist? && R::CommandLine.cache
-		@spersistant = Marshal.load(spersistfile.read)
-	else
-		@spersistant = {}
-	end
-	
-	END {
-		spersistfile.open('w').write(Marshal.dump(@spersistant))
-	}
-	
-	# Clear the system cache.
-	def self.clear_system_cache
-		@spersistant.clear
-	end
-	# Clear the project cache.
-	def self.clear_project_cache
-		@ppersistant.clear
-	end
-	# Clear all caches.
-	def self.clear_cache
-		clear_system_cache
-		clear_project_cache
-	end
 end
 
+# Define Module
+#
+# All configuration options are gathered here.
+module D
 
+end
+
+# Library Module
+#
+# Loaded libraries become available here.
+module L
+
+end
+
+# Rub internals.
+#
+# Internal functions intended for library developers only.  Eventually
+# this will be only for Rub itself and the functions for library developers will
+# be moved into ::C.
+module R
+
+end

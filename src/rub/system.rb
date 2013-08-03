@@ -26,36 +26,82 @@ require 'rub'
 
 module R
 	class Command
-		attr_accessor :cmd
+		# @!attribute [r] cmd
+		#   @return [Array<String>] The command to run.
+		attr_reader   :cmd
+		
+		# @!attribute [r] env
+		#   
+		#   Control the environment of the spawned process.  Values from this
+		#   hash will be added to the processes environment.  If a value is
+		#   nil the key will be removed from the processes environment.  These
+		#   values are overlaid on the existing environment unless {#clearenv}
+		#   is set.
+		#   
+		#   @return [Hash{String=>String,nil}] The environment variables.
 		attr_reader   :env
 	
+		# @!attribute [rw] stdin
+		#   @return [String] The string to use as input to the command.
 		attr_accessor :stdin
+		# @!attribute [r] stdout
+		#   @return [String] The output produced by the command.
+		# @!attribute [r] stderr
+		#   @return [String] The error output produced by the command.
 		attr_reader   :stdout, :stderr
 		
+		# @!attribute [r] status
+		#
+		#   Available after {#block} has returned.
+		#
+		#   @return [Process::Status,nil] The processes exit status.
 		attr_reader   :status
 		
+		# @!attribute [rw] clearenv
+		#   If set, the executed command will not inherit environment variables
+		#   from Rub.  Only the values in {#env} will be present in the
+		#   environment.
+		#   
+		#   Defaults to false.
+		#   
+		#   @return [true,false] If true don't inherit the environment.
 		attr_accessor :clearenv
+		# @!attribute [rw] mergeouts
+		#   @return [true,false] If true merge {#stdout} into {#stderr}.
 		attr_accessor :mergeouts
-	
-		def initialize(cmd=[])
+		
+		# Create a new command to run.
+		#
+		# @param cmd [Array<String,#to_s>] The command that will be run.
+		def initialize(cmd)
 			@env = {}
 			
-			@stdin  = ""
-			@stdout = ""
-			@stderr = ""
+			@clearenv = false
+			@mergeouts = false
 			
-			@opt = {}
-			
-			@cmd = cmd
+			@cmd = cmd.map{|a| a.to_s}
 		end
 		
+		# Start the command.
+		#
+		# Executes the command.  The command will run in the background.  If you
+		# want to wait for the command to complete call {#block}.
+		#
+		# @note Calling this command a second time before {#block} returns
+		#       produces undefined behaviour.  A {Command} can be run multiple
+		#       times but it must finish before being run again.
 		def start
 			@status = nil
 		
 			@stdinr,  @stdinw  = IO.pipe
 			@stdoutr, @stdoutw = IO.pipe
 			@stderrr, @stderrw = IO.pipe
-		
+			
+			@stdin  = ""
+			@stdout = ""
+			@stderr = ""
+			@status = nil
+			
 			args = [
 				@env,
 				*@cmd.map{|a| a.to_s},
@@ -79,11 +125,25 @@ module R
 			@pid
 		end
 		
+		# Run the command and block until completion.
+		#
+		# Equivalent to calling {#start} then {#block}.
+		#
+		# @return [true,false] Whether the command completed successfully.
 		def run
 			start
 			block
 		end
 		
+		# Wait for a command to finish.
+		#
+		# Block until a currently running process finishes.  Behaviour is
+		# undefined if the command is not currently running ({#start} has been
+		# called since the last {#block}).
+		#
+		# After this call returns {#status} will be available.
+		#
+		# @return [true,false] Whether the command completed successfully.
 		def block
 			@stdout = @stdoutr.read
 			@stderr = @stderrr.read
@@ -98,12 +158,26 @@ module R
 			success?
 		end
 		
+		# Check if the command was successful
+		#
+		# @return [true,false] true if the command executed successfully
+		#                      otherwise false.
+		# @note If the command has not been executed or has not completed this
+		#       returns false.
 		def success?
 			not not ( @status and @status.exitstatus == 0 )
 		end
 	end
 	
-	def self.run(cmd, desc, importance: :high)
+	# Run a command as part of the build.
+	#
+	# The command will be run and status will be printed.
+	#
+	# @param cmd  [Array<String,#to_s>] The command to execute.
+	# @param desc [String] The verb describing what the command is doing.
+	# @param importance [Symbol] The importance of this step.  Affects printing.
+	# @return [true,false] true if the command was successful.
+	def self.run(cmd, desc, importance: :med)
 		cmd = cmd.map{|a| a.to_s}
 	
 		bs = BuildStep.new

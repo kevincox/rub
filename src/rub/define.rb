@@ -27,11 +27,52 @@ require 'rub/environment'
 module D
 	@@map = {}
 	
+	# Define a configuration option.
+	#
+	# @param k [String] The key, or if +v+ is nil a string to parse.
+	# @param v [String,nil] The value
+	# @return [String] The value.
+	#
+	# If +v+ is non-nil +k+ is the key and +v+ is the value.  If +v+ is nil
+	# k must be a string and it is parsed to find the key and value.
+	#
+	# - If there is an '=' in +k+ the first one is used.
+	#   - If the '=' is proceeded by a '+' everything before the "+=" is used as
+	#     the key and everything after is used as the value.  These are then
+	#     passed are passed onto #push.
+	#   - Otherwise everything before the '=' is used as the key and everything
+	#     after as the value.
+	#   - If there is no '=' all of +k+ is used as the key and the value is
+	#     +true+.
+	#
+	# The key will be converted into a symbol and the k/v pair will be added to
+	# the configuration options.
+	#
+	# @example
+	#   D.define('k1', 'v1')
+	#   D[:k1] #=> "v1"
+	#   D.define('k2=v2')
+	#   D[:k2] #=> "v2"
+	#   D.define('k3')
+	#   D[:k3] #=> true
+	#   D.define('k4')
+	#   D[:k4] #=> true
+	#   D.define('k4=')
+	#   D[:k4] #=> ""
+	#   D.define('k5+=v5')
+	#   D.define('k5+=v6')
+	#   D[:k5] #=> ["v5", "v6"]
+	#   
+	#   D.define('w1=v1=v2')
+	#   D[:w1] #=> "v1=v2"
+	#   D.define('w2=v2+=v3')
+	#   D[:w2] #=> "v2+=v3"
 	def self.define(k, v=nil)
 		if v == nil
+		
 			k, f, v = k.partition '='
 			
-			if k.end_with?('+')
+			if k.end_with?('+') and not f.empty?
 				return push(k[0..-2], v)
 			end
 		end
@@ -44,12 +85,42 @@ module D
 		
 		@@map[k] = v
 	end
+	class << self
+		alias_method '[]=', :define
+	end
 	
+	# Push a configuration option onto a value.
+	#
+	# @param k [String] The key, or if +v+ is nil a string to parse.
+	# @param v [String,nil] The value
+	# @return [String] The value.
+	#
+	# If +v+ is non-nil +k+ is the key and +v+ is the value.  If +v+ is nil
+	# k must be a string and it is parsed to find the key and value.
+	#
+	# If there is a '=' in the string everything before the first '=' is used as
+	# the key and everything after the value.  If the key ends is '+' it is
+	# dropped.  If there is no '=' +k+ is used as the key and +true+ as the
+	# value.
+	#
+	# @example
+	#   D.push('k1', 'v1')
+	#   D[:k1] #=> ["v1"]
+	#   D.push('k1', 'v2')
+	#   D[:k1] #=> ["v1", "v2"]
+	#   D.push('k2=v3')
+	#   D.push('k2+=v4')
+	#   D.push('k2+=')
+	#   D[:k2] #=> ["v3", "v4", ""]
+	#   
+	#   D.push('w1+')
+	#   D[:w1]   #=> nil
+	#   D['w1+'] #=> [true]
 	def self.push(k, v=nil)
 		if v == nil
 			k, f, v = k.partition '='
 			
-			if k.end_with?('+')
+			if k.end_with?('+') and not f.empty?
 				k = k[0..-2]
 			end
 		end
@@ -65,21 +136,56 @@ module D
 		@@map[k].push(v)
 	end
 	
+	# Retrieve a defined value.
+	#
+	# @param k [Symbol,String] The key.
 	def self.[] (k)
-		@@map[k]
+		@@map[k.to_sym]
 	end
 	
+	# Return the configuration map.
+	#
+	# This is intended for debugging only and may be removed/made private any
+	# time.
+	#
+	# See: #pp
 	def self.map
 		return @@map
 	end
 	
+	# Pretty Print the configuration options.
+	#
+	# Useful for debugging.
+	def self.pp
+		pp map
+	end
+	
+	# Read definitions from a file.
+	#
+	# @deprecated
+	#
+	# These are read one-per-line and passed to #define (as one argument).
 	def self.fromFile(fn)
 		File.open(fn) {|f| f.each_line {|l| define(l.chomp) } }
 	end
 	
+	# Resolve a path.
+	#
+	# This makes a passed in path proper.  This function must be used in order
+	# to make paths passed in on the command line proper.  This makes all paths
+	# relative to the directory where the command was executed.  If the
+	# definition was not provided it is set to default, no path resolution is
+	# done on the default value.
+	#
+	# @param k [Symbol,String] The key of the option.
+	# @param default [Object] The value to use if +k+ is not set.
 	def self.resolve_path(k, default=nil)
-		@@map[k] or return @@map[k] = default
+		k = k.to_sym
 		
-		@@map[k] = Pathname.new(@@map[k]).expand_path(R::Env.cmd_dir)
+		@@map[k] = if @@map[k] != nil
+			Pathname.new(@@map[k]).expand_path(R::Env.cmd_dir)
+		else
+			default
+		end
 	end
 end

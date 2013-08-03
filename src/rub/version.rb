@@ -25,31 +25,44 @@
 require 'rub'
 
 module R
+
+	# Pretty Program Name.
 	def self.name
 		'Rub'
 	end
+	
+	# Command name.
 	def self.slug
 		'rub'
 	end
 
+	# Major version number.
 	def self.version_major
 		0
 	end
+	# Minor version number.
 	def self.version_minor
 		0
 	end
+	# Patch number.
 	def self.version_patch
 		0
 	end
 
+	# Version number as a list.
+	#
+	# Returns a list of three elements with the major, minor and patch numbers
+	# respectively.
 	def self.version
 		[version_major, version_minor, version_patch]
 	end
 	
+	# Returns a formatted version string.
 	def self.version_string
 		version.join('.')
 	end
 
+	# Returns a version string in the format of the +--version+ command switch.
 	def self.version_info_string
 		"#{slug} (#{name}) #{version_string}"
 	end

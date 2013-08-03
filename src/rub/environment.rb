@@ -25,32 +25,48 @@
 require 'pathname'
 
 module R::Env
+	# @!attribute [r] self.cmd_dir
+	#   @return [Pathname] The directory from which rub was executed.
 	cattr_accessor :cmd_dir
-	cattr_accessor :out_dir
 		
+	# @!attribute [r] self.global_cache
+	#   @return [Pathname] The global cache directory.
 	cattr_reader :global_cache
 	
 	@cmd_dir = Pathname.pwd
 	
-	def self.src_dir
-		@src_dir and return @src_dir
-	
-		@src_dir = @cmd_dir
-		while not (@src_dir+'root.rub').exist?
-			@src_dir = @src_dir.parent
+	# @private
+	def self.find_src_dir
+		d = @cmd_dir
+		while not (d+'root.rub').exist?
+			d = d.parent
 			
-			if @src_dir.root?
+			if d.root?
 				$stderr.puts('root.rub not found.  Make sure you are in the source directory.')
 				exit 1
 			end
 		end
 		
-		@out_dir = @src_dir + 'build/'
-		
-		@src_dir
+		d
+	end
+	private_class_method :find_src_dir
+
+	# @!attribute [r] self.src_dir
+	#   @return [Pathname] The root of the project.
+	def self.src_dir
+		@src_dir ||= find_src_dir
+	end
+	
+	# @!attribute [r] self.out_dir
+	#   @return [Pathname] The build output directory.
+	def self.out_dir
+		@out_dir ||= @src_dir + 'build/'
 	end
 	
 	@global_cache = Pathname(Dir.home())+".cache/rub/cache/"
+	
+	# @!attribute [r] self.project_cache
+	#   @return [Pathname] The project cache directory.
 	def self.project_cache
 		@out_dir + "cache/"
 	end

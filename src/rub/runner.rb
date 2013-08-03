@@ -26,9 +26,15 @@ require 'sysexits'
 
 require 'rub/environment'
 
+# Functions for running build scripts.
 module R::Runner
 	@@loaded = {}
 
+	# Execute a file.
+	#
+	# Runs a script if it hasn't been run already.
+	#
+	# @param f [Pathname,String] The file to run.
 	def self.doFile(f)
 		fs = f.to_s
 		if @@loaded[fs]
@@ -48,6 +54,15 @@ module R::Runner
 end
 
 module C
+	# Add a directory to the build.
+	#
+	# This will run the "dir.rub" file in that directory synchronously.  Any
+	# values that that directory defines will be available when this call
+	# returns.
+	#
+	# This function only runs scripts once, if the script has already run this
+	# function will return success without running the script, and as the script
+	# has already been run the exported values should be available.
 	def self.addDir(dir)
 		dir = Pathname.new(dir)
 		

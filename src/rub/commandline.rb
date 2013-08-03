@@ -66,9 +66,8 @@ Options:
 	cause a build to fail if the provided definitions don't contain enough
 	information.
 --no-cache
-	Disable caching.  All state will be lost between invocations of Rub and
-	all built files will be considered out of date.  Mostly useful when
-	testing build scripts and hacking on Rub itself.
+	Disable caching.  All state from previous runs will be discarded.  Caching
+	will still be performed inside a single run.
 -V, --version
 	Print the version and exit.
 -h, --help

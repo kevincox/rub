@@ -26,9 +26,7 @@ require 'digest/sha1'
 require 'pathname'
 
 module R
-	class << self
-		attr_reader :targets
-	end
+	cattr_reader :targets
 	
 	@targets = {}
 	@sources = {}
