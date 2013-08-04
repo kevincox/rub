@@ -22,53 +22,47 @@
 #                                                                              #
 ################################################################################
 
-require 'rub'
+#
+module R
 
-D.resolve_path :pefix
+	# Pretty Program Name.
+	def self.name
+		'Rub'
+	end
+	
+	# Command name.
+	def self.slug
+		'rub'
+	end
 
-# General purpose build tools.
-module L::Util
+	# Major version number.
+	def self.version_major
+		0
+	end
+	# Minor version number.
+	def self.version_minor
+		0
+	end
+	# Patch number.
+	def self.version_patch
+		0
+	end
 
-	# Install a file.
+	# Version number as a list.
 	#
-	# Installs +what+ into the directory +where+.  Source files are added to
-	# the +=all+ tag and installed files are added to the +=install+ tag.
-	#
-	# @param what [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
-	#             The files to install.
-	# @param where [Pathname,String] The directory to install them to.  If not
-	#                                absolute it is relative to +D:prefix+
-	# @return [Array<Pathname>] The installed files.
-	# 
-	# @example
-	#   exe = L::C.program(srcs, ['pthread'], 'bitmonitor-test')
-	#   L::Util.install exe, 'bin/'
-	#
-	def self.install(what, where)
-		what = R::Tool.make_set_paths what
-		where = Pathname.new(where).expand_path(D:prefix)
-		
-		at = ::C.tag('=all')
-		it = ::C.tag('=install')
-		
-		what.map! do |f|
-			f.directory? or next f
-		
-			c = []
-			f.find do |e|
-				e.file? and c << e
-			end
-			c
-		end
-		what.flatten!
-		what.map do |f|
-			out = where+f.basename
-			::C.generator(f, ['install', "-D", f, out], out, desc: "Installing").each do |o|
-				at.require(f)
-				it.require(o)
-			end
-			
-			out
-		end
+	# Returns a list of three elements with the major, minor and patch numbers
+	# respectively.
+	def self.version
+		[version_major, version_minor, version_patch]
+	end
+	
+	# Returns a formatted version string.
+	def self.version_string
+		version.join('.')
+	end
+
+	# Returns a version string in the format of the +--version+ command switch.
+	def self.version_info_string
+		"#{slug} (#{name}) #{version_string}"
 	end
 end

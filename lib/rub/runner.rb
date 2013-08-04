@@ -1,5 +1,3 @@
-#! /usr/bin/env ruby
-
 # Copyright 2013 Kevin Cox
 
 ################################################################################
@@ -24,30 +22,60 @@
 #                                                                              #
 ################################################################################
 
-require 'pathname'
-require 'pp'
-
-$LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
-
-require 'rub/version'
-require 'rub/tool'
+require 'sysexits'
 
 require 'rub/environment'
-require 'rub/commandline'
-require 'rub/dirs'
-require 'rub/persist'
-require 'rub/runner'
 
-require 'rub/target'
+# Functions for running build scripts.
+module R::Runner
+	@@loaded = {}
 
-require 'rub/c'
+	# Execute a file.
+	#
+	# Runs a script if it hasn't been run already.
+	#
+	# @param f [Pathname] The file to run.
+	# @return [void]
+	def self.do_file(f)
+		if @@loaded[f]
+			return
+		end
+	
+		if not f.exist?
+			$stderr.puts "\"#{f}\" is not readable!"
+			Sysexits.exit :noinput
+		end
+		
+		@@loaded[f] = true
+		
+		Dir.chdir f.dirname
+		load f.to_s
+	end
+end
 
-##### Add the first two scripts.
-R::Runner.doFile(R::Env.src_dir+"root.rub")
-R::Runner.doFile(R::Env.src_dir+"dir.rub")
-
-ARGV.empty? and ARGV << '=all'
-
-ARGV.each do |t|
-	R::get_target(Pathname.new(t).expand_path(R::Env.cmd_dir)).build
+module C
+	# Add a directory to the build.
+	#
+	# This will run the "dir.rub" file in that directory synchronously.  Any
+	# values that that directory defines will be available when this call
+	# returns.
+	#
+	# This function only runs scripts once, if the script has already run this
+	# function will return success without running the script, and as the script
+	# has already been run the exported values should be available.
+	def self.add_dir(dir)
+		dir = Pathname.new(dir)
+		
+		if not dir.directory?
+			raise "\"#{dir}\" is not a directory!"
+		end
+		
+		dir += 'dir.rub'
+		if not dir.exist?
+			raise "\"#{dir}\" does not exist!"
+		end
+		dir = dir.realpath
+		
+		R::Runner.do_file(dir)
+	end
 end
