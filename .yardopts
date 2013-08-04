@@ -1,1 +1,1 @@
-src/**/*.rb
+--default-return void src/**/*.rb

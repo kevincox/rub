@@ -24,6 +24,7 @@
 
 require 'pathname'
 
+# Environment Information
 module R::Env
 	# @!attribute [r] self.cmd_dir
 	#   @return [Pathname] The directory from which rub was executed.
@@ -51,22 +52,19 @@ module R::Env
 	end
 	private_class_method :find_src_dir
 
-	# @!attribute [r] self.src_dir
-	#   @return [Pathname] The root of the project.
+	# @return [Pathname] The directory from which rub was executed.
 	def self.src_dir
 		@src_dir ||= find_src_dir
 	end
 	
-	# @!attribute [r] self.out_dir
-	#   @return [Pathname] The build output directory.
+	# @return [Pathname] The build output directory.
 	def self.out_dir
 		@out_dir ||= @src_dir + 'build/'
 	end
 	
 	@global_cache = Pathname(Dir.home())+".cache/rub/cache/"
 	
-	# @!attribute [r] self.project_cache
-	#   @return [Pathname] The project cache directory.
+	# @return [Pathname] The project cache directory.
 	def self.project_cache
 		@out_dir + "cache/"
 	end

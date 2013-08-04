@@ -62,6 +62,9 @@ module C
 			@input  = Set[]
 		end
 		
+		# Add a target to this tag.
+		#
+		# @param f [Pathname,String] The path of the target.
 		def require(f)
 			f = R::Tool.make_set f
 			f.map!{|e| Pathname.new(e).expand_path}
@@ -93,6 +96,9 @@ module C
 			@target.register
 		end
 		
+		# Add a target to this tag.
+		#
+		# @param f [Pathname,String] The path of the target.
 		def require(f)
 			@target.require f
 		end

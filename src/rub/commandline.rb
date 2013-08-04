@@ -29,6 +29,7 @@ require 'rub/define'
 
 require 'rub'
 
+# Command line parsing and handling.
 module R::CommandLine
 	help = lambda do
 				puts <<ENDHELP

@@ -129,13 +129,30 @@ module R
 			)
 		end
 		
+		# Build the inputs.
 		def build_dependancies
 			input.each{|i| R::get_target(i).build }
 		end
+		private :build_dependancies
+		
+		# Build this target.
+		#
+		# This should be overridden if {#build} itself is not overridden.
+		
+		# @return [void]
 		def build_self
 			raise "#build_self not implemented in #{self.class}."
 		end
+		private :build_self
 		
+		# Build.
+		#
+		# This is a simple build method.  It calls {#build_dependancies} then
+		# {#build_self}.  Either or both of these methods can be overwritten to
+		# customize the build or this function can be overwritten to have more
+		# control.
+		# 
+		# @return [void]
 		def build
 			build_dependancies
 			build_self
@@ -144,6 +161,7 @@ module R
 		end
 	end
 	
+	# Target with additional functionality.
 	class TargetSmart < Target
 		attr_reader :input, :output
 	
@@ -152,17 +170,24 @@ module R
 			@output = Set.new
 		end
 		
+		# Mark target as clean.
+		#
+		# @return [void]
 		def clean
 			output.all?{|f| f.exist?} or return
 			
 			 R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash_contents
 		end
 		
+		# Is this target clean?
+		#
+		# @return [true,false] True if this target is up-to-date.
 		def clean?
 			output.all?{|f| f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash_contents
 		end
 	end
 	
+	# A target for existing sources.
 	class TargetSource < Target
 		attr_reader :output
 		

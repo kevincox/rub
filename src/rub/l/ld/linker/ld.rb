@@ -35,6 +35,8 @@ module L::LD
 			!!find
 		end
 		
+		# Find the linker command.
+		# @return [Pathname,nil] The command.
 		def self.find
 			::C.find_command 'ld'
 		end

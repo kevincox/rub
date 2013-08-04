@@ -68,8 +68,12 @@ module L::C
 				"-I#{d}"
 			end
 			f << options.define.map do |k, v|
-				# -Dk if v is true else -Dk=v.
-				"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
+				if v
+					# -Dk if v is true else -Dk=v.
+					"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
+				else
+					"-U#{k}"
+				end
 			end
 			
 			f.flatten!

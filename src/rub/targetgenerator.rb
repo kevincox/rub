@@ -26,6 +26,10 @@ require 'rub/target'
 require 'rub/system'
 
 module R
+	# A target that executes a command.
+	#
+	# This is a target that executes a command.  It can be used directly but
+	# it is easier and prettier to use {C.generator}
 	class TargetGenerator < TargetSmart
 		attr_accessor :action
 	
@@ -37,14 +41,25 @@ module R
 			@cmd = []
 		end
 		
+		# Add a command to be executed.
+		#
+		# @param cmd [Array<String,#to_s]
+		# @return [Array<String>] The command.
 		def add_cmd(cmd)
-			cmd = cmd.dup
+			cmd = cmd.map{|a| a.to_s}
 			cmd[0] = C.find_command(cmd[0])
 			@input << cmd[0]
 			@cmd << cmd
 			
 			cmd
 		end
+		
+		# Add multiple commands.
+		#
+		# @see add_cmd
+		#
+		# @param cmds [Array<Array<String,#to_s>>] The commands.
+		# @return [Array<Array<String>>] The commands.
 		def add_cmds(cmds)
 			cmds.map{|c| add_cmd c}
 		end

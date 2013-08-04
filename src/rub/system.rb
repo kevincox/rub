@@ -25,6 +25,8 @@
 require 'rub'
 
 module R
+
+	# A high level interface for executing commands.
 	class Command
 		# @!attribute [r] cmd
 		#   @return [Array<String>] The command to run.
@@ -165,7 +167,7 @@ module R
 		# @note If the command has not been executed or has not completed this
 		#       returns false.
 		def success?
-			not not ( @status and @status.exitstatus == 0 )
+			!!( @status and @status.exitstatus == 0 )
 		end
 	end
 	
@@ -198,13 +200,31 @@ module R
 		c.success?
 	end
 	
+	# Manages reporting build progress.
 	class BuildStep
+		# The verb describing this step.
+		# @return [String]
 		attr_accessor :desc
+		
+		# The command to execute.
+		# @return [Array<String>]
 		attr_accessor :cmd
+		
+		# The command output.
+		# @return [String]
 		attr_accessor :out
+		
+		# The exit status of the command.
+		# @return [Process::Status]
 		attr_accessor :status
 		
+		# The command's importance.
+		# @return [Symbol] :low, :medium or :high
 		attr_reader :importance
+		
+		# Set the command's importance.
+		# @param i [Symbol] :low, :medium or :high
+		# @return [Symbol] +i+
 		def importance=(i)
 			@importance = i
 			case i
@@ -217,6 +237,11 @@ module R
 			end
 		end
 		
+		# Constructor
+		#
+		# @param cmd  [Array<String>] The command executed.
+		# @param out  [String]        The output generated.
+		# @param desc [String]        A verb describing the event.
 		def initialize(cmd=[], out="", desc="", status=0)
 			@cmd    = cmd
 			@out    = out
@@ -226,6 +251,13 @@ module R
 			importance = :high
 		end
 		
+		# Format the command.
+		#
+		# Format's the command in the prettiest way possible.  Theoretically
+		# this command could be pasted into a shell and execute the desired
+		# command.
+		#
+		# @param cmd [Array<String>] The command.
 		def format_cmd(cmd)
 			cmd.map do |e|
 				if /[~`!#$&*(){};'"]/ =~ e
@@ -236,6 +268,7 @@ module R
 			end.join(' ')
 		end
 		
+		# Print the result.
 		def print
 			@importancei < 2 and return
 		

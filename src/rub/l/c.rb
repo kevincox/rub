@@ -26,26 +26,80 @@ require 'tempfile'
 
 require 'rub/l/ld'
 
+# C Library
 module L::C
-	cattr_accessor :compiler
+	# @!scope class
+	# All available compilers.
+	# @return [Hash{Symbol=>Compiler}]
 	cattr_reader   :compilers
 	
 	@compilers = {}
 	@prefered_compiler = nil
 
-	OPTIMIZE_NONE = :none
-	OPTIMIZE_SOME = :some
-	OPTIMIZE_FULL = :full
-	OPTIMIZE_MAX  = :max
-	
-	OPTIMIZE_FOR_SIZE  = :size
-	OPTIMIZE_FOR_SPEED = :speed
-
 	class Options
-		cattr_accessor :optimize, :optimize_for
-		cattr_accessor :debug, :profile
+		# @!scope class
+		# Default optimization level.
+		#
+		# This takes one of four optimization levels.  The actual optimization
+		# done is linker dependant.  For example, some linker may not have
+		# any optimization so all levels will be equivalent.
+		#
+		# One of the following:
+		# [+:none+] Perform no optimization.  This should be fast and debuggable.
+		# [+:some+] Perform light optimization that is pretty fast.
+		# [+:full+] Perform a high level of optimization producing a fast binary.
+		#           this may considerably slow down compilation.
+		# [+:max+]  Perform all available optimizations.  These may be
+		#           experimental and very slow.
+		#
+		# This value defaults to +:full+ if +D:debug+ is set, otherwise +:none+.
+		#
+		# @return [Symbol]
+		cattr_accessor :optimize
+		
+		# @!scope class
+		# Default optimization goal.
+		#
+		# This determines what the compiler should optimize for if it has the
+		# option.
+		#
+		# One of the following:
+		# [+:size+]  The compiler should focus on creating a small binary.
+		# [+:speed+] The compiler should focus on creating a fast binary.
+		#
+		# @return [Symbol]
+		cattr_accessor :optimize_for
+		
+		# @!scope class
+		# Default debug symbols setting.
+		#
+		# This determines if the compiler should produce debugging symbols.
+		#
+		# @return [true,false]
+		cattr_accessor :debug
+		
+		# @!scope class
+		# Default profile symbols setting.
+		#
+		# This determines if the compiler should produce code suitable for
+		# profiling.
+		#
+		# @return [true,false]
+		cattr_accessor :profile
 	
-		cattr_reader :include_dirs, :define
+		# @!scope class
+		# A list of directories to search for header files.
+		#
+		# These paths are searched in order.
+		#
+		# @return [Array<Pathname>]
+		cattr_reader :include_dirs
+		
+		# @!scope class
+		# A list of macros to define.  nil can be used to undefine a macro.
+		#
+		# @return [Hash{String=>String,true,nil}]
+		cattr_reader :define
 		
 		@@debug = @@profile = !!D[:debug]
 		@@optimize = @@debug ? :none : :full
@@ -55,10 +109,53 @@ module L::C
 			@@debug ? 'DEBUG' : 'NDEBUG' => true,
 		}
 		
-		attr_accessor :optimize, :optimize_for
-		attr_accessor :debug, :profile
+		# Optimization level
+		#
+		# Override the global optimization level.
+		#
+		# @return (see optimize)
+		# @see optimize
+		attr_accessor :optimize
+		
+		# Optimization goal.
+		#
+		# Override the global optimization goal.
+		#
+		# @return (see optimize_for)
+		# @see optimize_for
+		attr_accessor :optimize_for
+		
+		# Debugging Symbols
+		#
+		# Override the global debugging settings.
+		#
+		# @return (see debug)
+		# @see debug
+		attr_accessor :debug
+		
+		# Profile setting.
+		#
+		# Override the global profiling setting.
+		#
+		# @return (see profile)
+		# @see profile
+		attr_accessor :profile
 	
-		attr_reader :include_dirs, :define
+		# Include path.
+		#
+		# Override the global include path.
+		#
+		# @return (see include_dirs)
+		# @see include_dirs
+		attr_reader :include_dirs
+		
+		# Macro definitions.
+		#
+		# Override the global definitions list..
+		#
+		# @return (see define)
+		# @see define
+		attr_accessor :define
 		
 		def initialize
 			@optimize     = @@optimize
@@ -72,23 +169,46 @@ module L::C
 		end
 	end
 	
+	# An Abstraction over different compilers.
 	module Compiler
+		# The name of the compiler.
+		#
+		# @return [Symbol]
 		def self.name
 			:default
 		end
 		
+		# If the compiler is available on the current system.
+		#
+		# @return [true,false]
 		def self.available?
 			false
 		end
 		
+		# Return the preferred linker.
+		#
+		# Some compilers create objects that need to be linked with their
+		# linker.  This allows the compiler to specify the linker is wishes to
+		# be used.
 		def self.linker
 			nil
 		end
 		
+		# Compile source files.
+		#
+		# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+		#                The source files to link and generated headers.
+		# @param obj     [Pathname,String] The path of the output file.
+		# @param options [Options] An options object.
+		# @return [Pathname] The output file.
 		def self.compile_command(src, obj, options: Options.new)
 			raise "Not implemented!"
 		end
 		
+		# Compile a file.
+		#
+		# @param (see compile_command)
+		# @return [R::Command] the process that compiled the file.
 		def self.do_compile_file(f, obj, options: Options.new)
 			compile_command(f, obj)
 			c = R::Command.new(compile_command(f, obj, options: options))
@@ -96,6 +216,13 @@ module L::C
 			c
 		end
 		
+		# Compile a string.
+		#
+		# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+		#                A string containing the complete source to compile.
+		# @param obj     [Pathname,String] The path of the output file.
+		# @param options [Options] An options object.
+		# @return [R::Command] the process that compiled the string.
 		def self.do_compile_string(str, obj, options: Options.new)
 			f = Tempfile.new(['rub.l.c.testcompile', '.c'])
 			f.write(str)
@@ -105,18 +232,30 @@ module L::C
 			c
 		end
 		
+		# Peform a test compile.
+		#
+		# @param (see do_compile_file)
+		# @return [true,false] true if the compilation succeeded.
 		def self.test_compile(src, options: Options.new)
 			c = do_compile_file(src, File::NULL, options: options)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
 		
+		# Peform a test compile.
+		#
+		# @param (see do_compile_string)
+		# @return [true,false] true if the compilation succeeded.
 		def self.test_compile_string(src, options: Options.new)
 			c = do_compile_string(src, File::NULL, options: options)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
 		
+		# Check to see if a macro is defined.
+		#
+		# @param name [String] macro identifier.
+		# @return [true,false] true if the macro is defined.
 		def self.test_macro(name)
 			test_compile_string <<EOF
 #ifndef #{name}
@@ -148,6 +287,12 @@ EOF
 	
 	@prefered_compiler = D[:l_c_compiler].find {|c| @compilers.has_key? c}
 	
+	# Return a compiler object.
+	#
+	# @param name [Symbol,nil,Object] The name of the compiler.
+	# @return [Compiler] The compiler identified by +name+ or nil.  If a
+	#                    non-symbol non-nil object is passed by in name it is
+	#                    returned without ensuring it is a compiler.
 	def self.compiler(name=nil)
 		name ||= @prefered_compiler
 		
@@ -158,9 +303,17 @@ EOF
 		end
 	end
 	
-	def self.compile(src, compiler: @prefered_compiler, options: Options.new)
+		# Compile source files.
+		#
+		# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+		#                The source files to compile and generated headers.
+		# @param options [Options] An options object.
+		# @return [Set<Pathname>] The resulting object files.
+	def self.compile(src, compiler: nil, options: nil)
 		src = R::Tool.make_set_paths src
-		headers = []
+		options ||= Options.new
+		
+		headers = Set.new
 		src.keep_if do |s|
 			if s.extname.match /[H]/i
 			   headers << s
@@ -177,9 +330,12 @@ EOF
 			
 			TargetCSource.new(s, headers, options)
 			::C.generator(s, compiler.compile_command(s, out), out, desc:"Compiling")
-		end.flatten!
+		end
+		src.flatten!
+		src
 	end
 	
+	# A C source file.
 	class TargetCSource < R::Target
 		#def self.initialize
 		#	@@inited and return
@@ -250,17 +406,21 @@ EOF
 		end
 	end
 	
+	# Compile and link an executable.
+	#
+	# @param src      [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#                 The source files to compile and generated headers.
+	# @param lib      [Set<String>,Array<String>,String] Libraries to link with.
+	# @param name     [Pathname,String] The basename of the output file.
+	# @param options  [Options] An options object for the compiler.
+	# @param loptions [L::LD::Options] An options object for the linker.
+	# @return [Pathname] The resulting executable.
 	def self.program(src, lib, name, 
 	                 compiler: @prefered_compiler,
-	                 options: Options.new,
+	                 options: nil,
 	                 loptions: nil
 	                )
-		src = R::Tool.make_set_paths src
-		lib = R::Tool.make_set       lib
-		compiler = compiler compiler
-		
 		obj = compile(src, compiler: compiler, options: options)
-		
 		L::LD.link(obj, lib, name, format: :exe, linker: compiler.linker, options: loptions)
 	end
 end

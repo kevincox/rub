@@ -189,3 +189,16 @@ module D
 		end
 	end
 end
+
+# Alias for D.[]
+#
+# @see D.[]
+#
+# @example
+#   D.define 'k1=v1'
+#   D.define 'k2=v2'
+#   D :k1 #=> "v1"
+#   D:k2  #=> "v2"
+def D(k)
+	D[k]
+end

@@ -26,10 +26,27 @@ require 'rub'
 
 D.resolve_path :pefix
 
+# General purpose build tools.
 module L::Util
+
+	# Install a file.
+	#
+	# Installs +what+ into the directory +where+.  Source files are added to
+	# the +=all+ tag and installed files are added to the +=install+ tag.
+	#
+	# @param what [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#             The files to install.
+	# @param where [Pathname,String] The directory to install them to.  If not
+	#                                absolute it is relative to +D:prefix+
+	# @return [Array<Pathname>] The installed files.
+	# 
+	# @example
+	#   exe = L::C.program(srcs, ['pthread'], 'bitmonitor-test')
+	#   L::Util.install exe, 'bin/'
+	#
 	def self.install(what, where)
 		what = R::Tool.make_set_paths what
-		where = Pathname.new(where).expand_path(D[:prefix])
+		where = Pathname.new(where).expand_path(D:prefix)
 		
 		at = ::C.tag('=all')
 		it = ::C.tag('=install')
@@ -44,12 +61,14 @@ module L::Util
 			c
 		end
 		what.flatten!
-		what.each do |f|
+		what.map do |f|
 			out = where+f.basename
 			::C.generator(f, ['install', "-D", f, out], out, desc: "Installing").each do |o|
 				at.require(f)
 				it.require(o)
 			end
+			
+			out
 		end
 	end
 end

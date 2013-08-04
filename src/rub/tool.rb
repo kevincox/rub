@@ -28,6 +28,9 @@ require 'pathname'
 require 'rub/modules'
 
 class Module
+	# Class attribute reader.
+	#
+	# @see attr_reader
 	def cattr_reader(*name)
 		name.each do |n|
 			class_eval(<<-EOS, __FILE__, __LINE__ + 1)
@@ -41,6 +44,9 @@ end
 EOS
 		end
 	end
+	# Class attribute writer.
+	#
+	# @see attr_writer
 	def cattr_writer(*name)
 		name.each do |n|
 			class_eval(<<-EOS, __FILE__, __LINE__ + 1)
@@ -54,6 +60,9 @@ end
 EOS
 		end
 	end
+	# Class attribute accessor.
+	#
+	# @see attr_accessor
 	def cattr_accessor(*name)
 		cattr_reader(*name)
 		cattr_writer(*name)
@@ -62,6 +71,7 @@ end
 
 # From: http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-list/43424
 class Object
+  # Recursively clone an object.
   def deep_clone
     return @deep_cloning_obj if @deep_cloning
     @deep_cloning_obj = clone

@@ -35,6 +35,8 @@ module L::LD
 			!!find
 		end
 		
+		# Find the linker executable.
+		# @return [Pathname,nil] The path of the executable.
 		def self.find
 			::C.find_command 'gcc'
 		end
