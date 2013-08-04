@@ -22,12 +22,50 @@
 #                                                                              #
 ################################################################################
 
-require 'rub'
+
+require 'singleton'
 
 D.resolve_path :pefix
 
 # General purpose build tools.
 module L::Util
+	class TargetUninstall < R::Target
+		include Singleton
+		
+		def initialize
+			@files = Set.new
+			
+			R::set_target :uninstall, self
+		end
+		
+		def add(f)
+			f = R::Tool.make_set_paths f
+			
+			@files.merge f
+			
+			f
+		end
+		
+		def build
+			R::run(['rm', '-fv']+@files.to_a, "Removing installed files.", importance: :med)
+		end
+	end
+	TargetUninstall.instance # Make the target.
+	
+	# Uninstall a file.
+	#
+	# Adds the file to the :uninstall tag.
+	#
+	# @param what [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#             The files to remove.
+	# @return [void]
+	def self.uninstall(what)
+		what = R::Tool.make_set_paths what
+		
+		what.each do |f|
+			TargetUninstall.instance.add f
+		end
+	end
 
 	# Install a file.
 	#
@@ -60,6 +98,7 @@ module L::Util
 					at.require(f)
 					it.require(o)
 				end
+				uninstall out
 				
 				out
 			end

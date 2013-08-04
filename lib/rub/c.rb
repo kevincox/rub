@@ -190,10 +190,15 @@ module C
 	#   C::find_command 'python'  #=> #<Pathname:/usr/bin/python>
 	#   C::find_command 'explode' #=> nil
 	def self.find_command(cmd)
+		pn = Pathname.new(cmd)
+		if pn.absolute?
+			return pn.executable? ? pn : nil
+		end
+		
 		exe = R.spersistant["C.find_command.#{cmd}"]
 		
 		exe and exe.executable? and return exe
-
+		
 		exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
 		names = exts.map{|e| cmd+e}
 		ENV['PATH'].split(File::PATH_SEPARATOR)

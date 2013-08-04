@@ -128,13 +128,13 @@ module R::Tool
 	#
 	#   a = Pathname.new('root.rub')    #=> #<Pathname:root.rub>
 	#   b = 'dir.rub'                   #=> "dir.rub"
-	#   R::Tool.make_array_paths a      #=> [#<Pathname:root.rub>]
-	#   R::Tool.make_array_paths [a]    #=> [#<Pathname:root.rub>]
-	#   R::Tool.make_array_paths [a, b] #=> [#<Pathname:root.rub>, #<Pathname:dir.rub>]
-	#   R::Tool.make_array_paths b      #=> [#<Pathname:dir.rub>]
+	#   R::Tool.make_array_paths a      #=> [#<Pathname:/path/to/root.rub>]
+	#   R::Tool.make_array_paths [a]    #=> [#<Pathname:/path/to/root.rub>]
+	#   R::Tool.make_array_paths [a, b] #=> [#<Pathname:/path/to/root.rub>, #<Pathname:/path/to/dir.rub>]
+	#   R::Tool.make_array_paths b      #=> [#<Pathname:/path/to/dir.rub>]
 	def self.make_array_paths(a)
 		make_array(a).map do |p|
-			Pathname.new p
+			Pathname.new(p).expand_path
 		end
 	end
 	

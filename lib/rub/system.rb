@@ -180,12 +180,19 @@ module R
 	# @param importance [Symbol] The importance of this step.  Affects printing.
 	# @return [true,false] true if the command was successful.
 	def self.run(cmd, desc, importance: :med)
-		cmd = cmd.map{|a| a.to_s}
+		cmd = cmd.dup
 	
 		bs = BuildStep.new
 		bs.desc = desc
 		bs.cmd  = cmd
 		bs.importance = importance
+		
+		cpath = C.find_command cmd[0]
+		if not cpath
+			raise "Could not find #{cmd[0]}.  Please install it or add it to your path."
+		end
+		cmd[0] = cpath
+		cmd.map!{|a| a.to_s}
 		
 		c = Command.new(cmd)
 		c.mergeouts = true
