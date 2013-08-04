@@ -46,8 +46,14 @@ require 'rub/c'
 R::Runner.do_file(R::Env.src_dir+"root.rub")
 R::Runner.do_file(R::Env.src_dir+"dir.rub")
 
-ARGV.empty? and ARGV << '=all'
+ARGV.empty? and ARGV << ':all'
 
 ARGV.each do |t|
-	R::get_target(Pathname.new(t).expand_path(R::Env.cmd_dir)).build
+	t = if t =~ /^:[^\/]*$/ # Is a tag.
+		t[1..-1].to_sym
+	else
+		Pathname.new(t).expand_path
+	end
+	R::get_target(t).build
 end
+

@@ -48,8 +48,8 @@ module L::Util
 		what = R::Tool.make_set_paths what
 		where = Pathname.new(where).expand_path(D :prefix)
 		
-		at = ::C.tag('=all')
-		it = ::C.tag('=install')
+		at = ::C.tag :all
+		it = ::C.tag :install
 		
 		what.map do |f|
 			if f.directory?

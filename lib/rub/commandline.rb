@@ -99,7 +99,6 @@ ENDHELP
 		[:file, Pathname.new(Dir.home())+".config/rub/config.rb"],
 	].keep_if { |t, n| n.exist? }
 	
-
 	opts.each do |opt, arg|
 		case opt
 			when '--out'

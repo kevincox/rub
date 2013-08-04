@@ -27,7 +27,13 @@ require 'pathname'
 require 'set'
 
 module R
-	#cattr_reader :targets
+	# All targets.
+	#
+	# This should only be used for debugging.  Use {find_target}, {get_target}
+	# and {set_target} instead.
+	#
+	# @return [Hash{Pathname,Symbol=>Target}]
+	cattr_reader :targets
 	
 	@targets = {}
 	@sources = {}
@@ -39,8 +45,8 @@ module R
 	# @param path [Pathname,String] The path of the target.
 	# @return [Target,nil] The target.
 	def self.find_target(path)
-		p = Pathname.new(path).expand_path
-		@targets[p] || @sources[p]
+		path = Pathname.new(path).expand_path unless path.is_a? Symbol
+		@targets[path] || @sources[path]
 	end
 	
 	# Get a target.
@@ -51,7 +57,7 @@ module R
 	# @param path [Pathname,String] The path of the target.
 	# @return [Target,TargetSource]
 	def self.get_target(path)
-		path = C.path(path)
+		path = Pathname.new(path).expand_path unless path.is_a? Symbol
 		
 		find_target(path) or @sources[path] ||= TargetSource.new(path)
 	end
@@ -69,7 +75,8 @@ module R
 		if find_target(path)
 			$stderr.puts "Warning: #{path} can be built two ways."
 		end
-		@targets[Pathname.new(path).expand_path] = target
+		path = Pathname.new(path).expand_path unless path.is_a? Symbol
+		@targets[path] = target
 	end
 	
 	# The base target class.
@@ -97,9 +104,7 @@ module R
 		#
 		# @return [void]
 		def register
-			output.map do |f|
-				f.expand_path
-			end.each do |d|
+			output.each do |d|
 				R.set_target(d, self)
 			end
 		end

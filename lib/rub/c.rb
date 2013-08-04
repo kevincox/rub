@@ -57,7 +57,12 @@ module C
 	class TargetTag < R::Target
 		attr_reader :output, :input
 		
+		# Create a TargetTag
+		#
+		# @param t [Symbol] the name of the tag.
 		def initialize(t)
+			t.is_a? Symbol or raise 'Targets can be created with symbols only.'
+		
 			@output = Set[t]
 			@input  = Set[]
 		end
@@ -91,7 +96,15 @@ module C
 	# Manages a tag.  This should not be created buy the user but retrieved from
 	# {C.tag}.
 	class Tag
+		# The tag's name.
+		# @return [Symbol]
+		attr_accessor :name
+		
+		# Create a Tag
+		#
+		# @param t [Symbol] the name of the tag.
 		def initialize(t)
+			@name = t
 			@target = TargetTag.new(t)
 			@target.register
 		end
@@ -109,21 +122,17 @@ module C
 	# If the tag already exists it returns the existing {Tag} object otherwise
 	# it creates and returns a new {Tag} instance.
 	#
-	# @param t [String] The tag name.  It is recommended that it starts with a
-	#                   '=' although this is not enforced.
+	# @param t [Symbol] The tag name.
 	# @return [Tag]     The tag object.
 	def self.tag(t)
-		p = R::Env.cmd_dir + t
-		p = p.expand_path
-		
-		R.find_target(p) || Tag.new(p)
+		R.find_target(t) || Tag.new(t)
 	end
 	
 	##### Create default tags.
-	::C.tag('=all')
-	::C.tag('=install')
-	::C.tag('=help')
-	::C.tag('=none')
+	::C.tag :all
+	::C.tag :install
+	::C.tag :help
+	::C.tag :none
 	
 	# Add a generator to the build
 	#
