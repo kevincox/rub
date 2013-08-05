@@ -22,20 +22,20 @@
 #                                                                              #
 ################################################################################
 
-
 require 'singleton'
 
 D.resolve_path :pefix
 
 # General purpose build tools.
 module L::Util
-	class TargetUninstall < R::Target
+	class TargetUninstall < C::TargetTag
 		include Singleton
 		
 		def initialize
+			super :uninstall
 			@files = Set.new
 			
-			R::set_target :uninstall, self
+			register
 		end
 		
 		def add(f)
@@ -50,7 +50,7 @@ module L::Util
 			R::run(['rm', '-fv']+@files.to_a, "Removing installed files.", importance: :med)
 		end
 	end
-	TargetUninstall.instance # Make the target.
+	TargetUninstall.instance.description = 'Remove installed targets.' # Make the target.
 	
 	# Uninstall a file.
 	#

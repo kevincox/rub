@@ -48,7 +48,7 @@ module R::Env
 			end
 		end
 		
-		d
+		d.parent + (d.basename.to_s+'/') # Ensure this ends in a '/'
 	end
 	private_class_method :find_src_dir
 

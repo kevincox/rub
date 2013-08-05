@@ -56,6 +56,9 @@ module C
 	# This is the target used for tags.
 	class TargetTag < R::Target
 		attr_reader :output, :input
+		attr_reader :tag
+		
+		attr_accessor :description
 		
 		# Create a TargetTag
 		#
@@ -63,6 +66,7 @@ module C
 		def initialize(t)
 			t.is_a? Symbol or raise 'Targets can be created with symbols only.'
 		
+			@tag = t
 			@output = Set[t]
 			@input  = Set[]
 		end
@@ -89,7 +93,6 @@ module C
 			input.each{|i| R::get_target(i).build }
 		end
 	end
-	private_constant :TargetTag
 	
 	# Tag class
 	#
@@ -99,6 +102,13 @@ module C
 		# The tag's name.
 		# @return [Symbol]
 		attr_accessor :name
+		
+		def description
+			@target.description
+		end
+		def description=(d)
+			@target.description = d
+		end
 		
 		# Create a Tag
 		#
@@ -129,10 +139,9 @@ module C
 	end
 	
 	##### Create default tags.
-	::C.tag :all
-	::C.tag :install
-	::C.tag :help
-	::C.tag :none
+	::C.tag(:all)    .description = 'All targets.'
+	::C.tag(:install).description = 'Install the project.'
+	::C.tag(:none)   .description = 'Do nothing.'
 	
 	# Add a generator to the build
 	#

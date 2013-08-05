@@ -98,6 +98,14 @@ module R
 			Set.new
 		end
 		
+		# Description.
+		#
+		# Shown for :help.
+		# @return [String,nil]
+		def description
+			nil
+		end
+		
 		# Register this target.
 		#
 		# Registers this target as building it's {#output}s.

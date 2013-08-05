@@ -41,10 +41,13 @@ require 'rub/runner'
 require 'rub/target'
 
 require 'rub/c'
+require 'rub/help'
 
 ##### Add the first two scripts.
 R::Runner.do_file(R::Env.src_dir+"root.rub")
 R::Runner.do_file(R::Env.src_dir+"dir.rub")
+
+R::TargetHelp.gen_help
 
 ARGV.empty? and ARGV << ':all'
 
