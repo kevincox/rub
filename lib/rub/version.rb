@@ -41,7 +41,7 @@ module R
 	end
 	# Minor version number.
 	def self.version_minor
-		0
+		1
 	end
 	# Patch number.
 	def self.version_patch
