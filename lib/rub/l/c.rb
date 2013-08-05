@@ -326,7 +326,7 @@ EOF
 		compiler = compiler compiler
 	
 		src.map! do |s|
-			out = R::Env.out_dir + 'l/c/objects/' + (Pathname.new(s).expand_path.to_s[1..-1] + '.o')
+			out = R::Env.out_dir + 'l/c/objects/' + (C.path(s).to_s[1..-1] + '.o')
 			
 			TargetCSource.new(s, headers, options)
 			::C.generator(s, compiler.compile_command(s, out), out, desc:"Compiling")
@@ -348,7 +348,7 @@ EOF
 		def initialize(f, input = [], options = Options.new)
 			#TargetC.initialize
 			
-			@f = Pathname.new(f).expand_path
+			@f = C.path(f)
 			@opt = options
 			@input = input
 			
@@ -369,7 +369,7 @@ EOF
 			
 			d = c.stdout.lines.map do |l|
 				l.match(/^# [0-9]+ "(.|[^<].*[^>])"/) do |md|
-					Pathname.new(md[1]).expand_path
+					C.path(md[1])
 				end
 			end.select do |l|
 				l
@@ -384,7 +384,7 @@ EOF
 			@incs and return @incs
 			
 			@input.map do |f|
-				Pathname.new(f).expand_path
+				C.path(f)
 			end.map do |f|
 				[f, R.get_target(f)]
 			end.each do |f, i| 

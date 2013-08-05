@@ -45,7 +45,7 @@ module R
 	# @param path [Pathname,String] The path of the target.
 	# @return [Target,nil] The target.
 	def self.find_target(path)
-		path = Pathname.new(path).expand_path unless path.is_a? Symbol
+		path = C.path(path)
 		@targets[path] || @sources[path]
 	end
 	
@@ -57,7 +57,7 @@ module R
 	# @param path [Pathname,String] The path of the target.
 	# @return [Target,TargetSource]
 	def self.get_target(path)
-		path = Pathname.new(path).expand_path unless path.is_a? Symbol
+		path = C.path(path)
 		
 		find_target(path) or @sources[path] ||= TargetSource.new(path)
 	end
@@ -75,8 +75,7 @@ module R
 		if find_target(path)
 			$stderr.puts "Warning: #{path} can be built two ways."
 		end
-		path = Pathname.new(path).expand_path unless path.is_a? Symbol
-		@targets[path] = target
+		@targets[C.path(path)] = target
 	end
 	
 	# The base target class.
@@ -197,6 +196,16 @@ module R
 		# @return [true,false] True if this target is up-to-date.
 		def clean?
 			output.all?{|f| f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash_contents
+		end
+		
+		def build
+			build_dependancies
+			
+			clean? and return
+			
+			build_self
+			
+			clean
 		end
 	end
 	

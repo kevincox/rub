@@ -47,7 +47,12 @@ module R
 		# @return [Array<String>] The command.
 		def add_cmd(cmd)
 			cmd = cmd.map{|a| a.to_s}
-			cmd[0] = C.find_command(cmd[0])
+			exe = C.find_command(cmd[0])
+			if not exe
+				$stderr.puts "Can't find #{cmd[0]}."
+				exit 1
+			end
+			cmd[0] = exe
 			@input << cmd[0]
 			@cmd << cmd
 			

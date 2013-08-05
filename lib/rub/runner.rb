@@ -64,7 +64,7 @@ module C
 	# function will return success without running the script, and as the script
 	# has already been run the exported values should be available.
 	def self.add_dir(dir)
-		dir = Pathname.new(dir)
+		dir = C.path(dir)
 		
 		if not dir.directory?
 			raise "\"#{dir}\" is not a directory!"

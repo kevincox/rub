@@ -1,5 +1,3 @@
-#! /usr/bin/env ruby
-
 # Copyright 2013 Kevin Cox
 
 ################################################################################
@@ -24,39 +22,67 @@
 #                                                                              #
 ################################################################################
 
-require 'pathname'
-require 'pp'
+require 'rub/modules'
 
-$LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
-
-require 'rub/version'
-require 'rub/tool'
-
-require 'rub/environment'
-require 'rub/commandline'
-require 'rub/dirs'
-require 'rub/persist'
-require 'rub/runner'
-
-require 'rub/target'
-
-require 'rub/c'
-require 'rub/help'
-
-##### Add the first two scripts.
-R::Runner.do_file(R::Env.src_dir+"root.rub")
-R::Runner.do_file(R::Env.src_dir+"dir.rub")
-
-R::TargetHelp.gen_help
-
-ARGV.empty? and ARGV << ':all'
-
-ARGV.each do |t|
-	t = if t =~ /^:[^\/]*$/ # Is a tag.
-		t[1..-1].to_sym
-	else
-		C.path(t)
+module R::Version
+	@@cdto = "cd '#{Pathname.new(__FILE__).realpath.dirname}'"
+	@@regex = /^v([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9]+))?(-g([0-9a-f]+))?(-(dirty))?$/
+	
+	# Pretty Program Name.
+	def self.name
+		'Rub'
 	end
-	R::get_target(t).build
-end
+	
+	# Command name.
+	def self.slug
+		'rub'
+	end
+	
+	def self.tag
+		@@tagcache ||= `#{@@cdto}; git tag -l 'v[0-9]*.*.*'`.chomp
+	end
 
+	# Major version number.
+	def self.version_major
+		tag.sub @@regex, '\1'
+	end
+	# Minor version number.
+	def self.version_minor
+		tag.sub @@regex, '\2'
+	end
+	# Patch number.
+	def self.version_patch
+		tag.sub @@regex, '\3'
+	end
+	
+	def self.revision?
+		tag.sub @@regex, '\9'
+	end
+	
+	def self.dirty?
+		`#{@@cdto}; git diff --exit-code`
+		$? != 0
+	end
+	
+	def self.rendered?
+		false
+	end
+	
+	# Version number as a list.
+	#
+	# Returns a list of three elements with the major, minor and patch numbers
+	# respectively.
+	def self.version
+		[version_major, version_minor, version_patch]
+	end
+	
+	# Returns a formatted version string.
+	def self.string
+		`#{@@cdto}; git describe --always --dirty --match 'v[0-9]*.*.*'`.chomp.sub(/^v/, '')
+	end
+
+	# Returns a version string in the format of the +--version+ command switch.
+	def self.info_string
+		"#{slug} (#{name}) #{string}"
+	end
+end

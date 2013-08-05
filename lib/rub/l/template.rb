@@ -1,5 +1,3 @@
-#! /usr/bin/env ruby
-
 # Copyright 2013 Kevin Cox
 
 ################################################################################
@@ -24,39 +22,68 @@
 #                                                                              #
 ################################################################################
 
-require 'pathname'
-require 'pp'
+require 'erb'
+require 'ostruct'
 
-$LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
-
-require 'rub/version'
-require 'rub/tool'
-
-require 'rub/environment'
-require 'rub/commandline'
-require 'rub/dirs'
-require 'rub/persist'
-require 'rub/runner'
-
-require 'rub/target'
-
-require 'rub/c'
-require 'rub/help'
-
-##### Add the first two scripts.
-R::Runner.do_file(R::Env.src_dir+"root.rub")
-R::Runner.do_file(R::Env.src_dir+"dir.rub")
-
-R::TargetHelp.gen_help
-
-ARGV.empty? and ARGV << ':all'
-
-ARGV.each do |t|
-	t = if t =~ /^:[^\/]*$/ # Is a tag.
-		t[1..-1].to_sym
-	else
-		C.path(t)
+# Templates for generating files.
+module L::Template
+	class Renderer < OpenStruct
+		def render(template)
+			ERB.new(template, nil, '-').result(binding)
+		end
+		def render_file(f)
+			f = C.path f
+			
+			render f.read
+		end
 	end
-	R::get_target(t).build
+	
+	class TargetRenderer < R::TargetSmart
+		def initialize(inp, out, values)
+			super()
+			
+			pp inp
+			
+			@template = inp
+			@resultf  = out
+			
+			if inp.is_a? Pathname
+				input << inp
+			end
+			output << out
+			
+			@renderer = Renderer.new values
+		end
+		
+		def build_self
+			r = if @template.is_a? String
+				@renderer.render @template
+			else
+				@renderer.render_file @template
+			end
+			
+			@resultf.dirname.mkpath
+			@resultf.open('w') do |f|
+				f.write r
+			end
+		end
+	end
+	
+	#def render(template, values)
+	#	Renderer.new(values).render(template)
+	#end
+	#def render_file(f, values)
+	#	Renderer.new(values).render_file(f)
+	#end
+	
+	def self.generate_file(inp, out, values={})
+		inp = C.path inp
+		out = R::Env.out_dir + 'l/template/' + C.unique_segment([inp, values]) + out
+		
+		t = TargetRenderer.new(inp, out, values)
+		t.register
+		
+		pp out
+		return out
+	end
 end
-

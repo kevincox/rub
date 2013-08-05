@@ -126,7 +126,7 @@ module R::Tool
 	#
 	# @see make_array
 	#
-	#   a = Pathname.new('root.rub')    #=> #<Pathname:root.rub>
+	#   a = C.path('root.rub')          #=> #<Pathname:root.rub>
 	#   b = 'dir.rub'                   #=> "dir.rub"
 	#   R::Tool.make_array_paths a      #=> [#<Pathname:/path/to/root.rub>]
 	#   R::Tool.make_array_paths [a]    #=> [#<Pathname:/path/to/root.rub>]
@@ -134,7 +134,7 @@ module R::Tool
 	#   R::Tool.make_array_paths b      #=> [#<Pathname:/path/to/dir.rub>]
 	def self.make_array_paths(a)
 		make_array(a).map do |p|
-			Pathname.new(p).expand_path
+			C.path(p)
 		end
 	end
 	
@@ -147,7 +147,7 @@ module R::Tool
 	
 	# load every script in the directory +d+.
 	def self.load_dir(d)
-		d = Pathname.new(d)
+		d = C.path(d)
 		
 		d.children.each {|i| load i}
 	end

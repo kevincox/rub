@@ -187,6 +187,7 @@ module R
 		bs.cmd  = cmd
 		bs.importance = importance
 		
+		pp cmd[0]
 		cpath = C.find_command cmd[0]
 		if not cpath
 			raise "Could not find #{cmd[0]}.  Please install it or add it to your path."

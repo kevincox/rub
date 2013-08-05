@@ -23,6 +23,7 @@
 ################################################################################
 
 require 'pathname'
+require 'digest/sha1'
 
 require 'rub/tool'
 require 'rub/targetgenerator'
@@ -30,25 +31,30 @@ require 'rub/targetgenerator'
 module C
 	# Expand a path.
 	#
-	# Not documented because it may be removed.
-	#
-	# @deprecated Use +Pathname#new+ instead.
+	# @return [Pathname]
 	def self.path(p)
-		#raise "crash me" if caller.length > 500
-		p = p.to_s
+		p.is_a? Symbol and return p
 		
-		p = case p[0]
-			when '!'
-				Pathname.new(p[1..-1])
-			when '>'
-				R::Env.out_dir + p[1..-1]
-			when '<'
-				R::Env.src_dir + p[1..-1]
-			else
-				Pathname.new(p)
-		end
+		#p = case p[0]
+		#	when '!'
+		#		Pathname.new(p[1..-1])
+		#	when '>'
+		#		R::Env.out_dir + p[1..-1]
+		#	when '<'
+		#		R::Env.src_dir + p[1..-1]
+		#	else
+		#		Pathname.new(p)
+		#end
 		
-		p = p.expand_path
+		Pathname.new(p).expand_path
+	end
+	
+	def self.unique_segment(seed=nil)
+		Digest::SHA1.hexdigest(( seed != nil ? seed : caller_locations(1,1) ).to_s)
+	end
+	
+	def self.unique_name(base, seed=nil)
+		R::Env.out_dir + 'c/unique/' + unique_segment(seed) + base
 	end
 	
 	# Tag Target
@@ -76,7 +82,7 @@ module C
 		# @param f [Pathname,String] The path of the target.
 		def require(f)
 			f = R::Tool.make_set f
-			f.map!{|e| Pathname.new(e).expand_path}
+			f.map!{|e| C.path(e)}
 			
 			input.merge(f)
 		end

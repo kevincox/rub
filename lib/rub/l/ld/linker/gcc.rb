@@ -44,7 +44,7 @@ module L::LD
 		def self.link_command(files, libs, out, format: :exe, options: nil)
 			files = R::Tool.make_set_paths files
 			libs  = R::Tool.make_set       libs
-			out = Pathname.new out
+			out = C.path(out)
 			options ||= Options.new
 		
 			c = [find, "-o#{out}"]

@@ -22,47 +22,20 @@
 #                                                                              #
 ################################################################################
 
-#
-module R
+require 'rub/modules'
 
-	# Pretty Program Name.
-	def self.name
-		'Rub'
-	end
-	
-	# Command name.
-	def self.slug
-		'rub'
-	end
+cwd = Pathname.new(__FILE__).realpath.dirname
 
-	# Major version number.
-	def self.version_major
-		0
-	end
-	# Minor version number.
-	def self.version_minor
-		1
-	end
-	# Patch number.
-	def self.version_patch
-		0
-	end
+`cd '#{cwd}'; git rev-parse --git-dir > /dev/null 2>&1`
+ingit = $?.exitstatus == 0
 
-	# Version number as a list.
-	#
-	# Returns a list of three elements with the major, minor and patch numbers
-	# respectively.
-	def self.version
-		[version_major, version_minor, version_patch]
-	end
-	
-	# Returns a formatted version string.
-	def self.version_string
-		version.join('.')
-	end
-
-	# Returns a version string in the format of the +--version+ command switch.
-	def self.version_info_string
-		"#{slug} (#{name}) #{version_string}"
-	end
+if cwd.join('version-git.rb').exist? && ingit
+	#puts 'Loading git'
+	load cwd.join('version-git.rb').to_s
+elsif cwd.join('version-generated.rb').exist?
+	#puts 'Loading generated'
+	load cwd.join('version-generated.rb').to_s
+else
+	raise "Couldn't fine version info!"
+	exit 1
 end

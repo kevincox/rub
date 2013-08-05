@@ -114,7 +114,7 @@ ENDHELP
 				@cache = false
 				sysscripts = []
 			when '--version'
-				puts R.version_info_string
+				puts R::Version.info_string
 				exit 0
 			when '--help'
 				help.call
