@@ -72,6 +72,23 @@ module R::Version
 		"#{slug} (#{name}) #{string}"
 	end
 	
+	# Returns a formatted version string.
+	def self.string
+		a = []
+		
+		a << number_string
+		if dist_from_tag > 0
+			a << dist_from_tag
+			a << "g#{commit[0,8]}"
+		end
+		
+		if dirty?
+			a << 'dirty'
+		end
+		
+		a.join '-'
+	end
+	
 	# Return a string describing the current version.
 	#
 	# Returns an overly verbose string giving all useful (and more) information
@@ -98,7 +115,7 @@ module R::Version
 		
 		if rendered?
 			out << "\n"
-			out << "NOTE: This information is accurate at the time of"
+			out << "NOTE: This information was accurate at the time of"
 			out << " installation.  Rub can not detect changes since then."
 		end
 		

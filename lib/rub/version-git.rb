@@ -61,9 +61,4 @@ module R::Version
 		`#{@@cdto}; git diff --exit-code`
 		$? != 0
 	end
-	
-	# Returns a formatted version string.
-	def self.string
-		`#{@@cdto}; git describe --always --dirty --match 'v[0-9]*.*.*'`.chomp.sub(/^v/, '')
-	end
 end
