@@ -44,7 +44,7 @@ module R::Env
 			
 			if d.root?
 				$stderr.puts('root.rub not found.  Make sure you are in the source directory.')
-				exit 1
+				Sysexits.exit :usage
 			end
 		end
 		

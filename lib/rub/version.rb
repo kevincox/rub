@@ -97,14 +97,16 @@ module R::Version
 		out << " version #{number_string}.\n"
 		
 		if rendered?
-			out << ".\n"
+			out << "\n"
 			out << "NOTE: This information is accurate at the time of"
-			out << "installation.  Rub can not detect changes since then."
+			out << " installation.  Rub can not detect changes since then."
 		end
 		
 		out.join
 	end
 end
+
+R::VersionPure = R::Version.dup
 
 cwd = Pathname.new(__FILE__).realpath.dirname
 
@@ -119,5 +121,5 @@ elsif cwd.join('version-generated.rb').exist?
 	load cwd.join('version-generated.rb').to_s
 else
 	raise "Couldn't fine version info!"
-	exit 1
+	Sysexits.exit :software
 end

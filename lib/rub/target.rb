@@ -226,7 +226,7 @@ module R
 			if not @src.exist?
 				#p self
 				$stderr.puts "Error: source file #{@src} does not exist!"
-				exit 1
+				Sysexits.exit :noinput
 			end
 		end
 	end

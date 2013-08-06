@@ -38,7 +38,7 @@ require 'rub/modules'
 #
 module R::Version
 <%
-	mtds = R::Version.methods - Module.new.methods
+	mtds = R::Version.methods - R::VersionPure.methods
 	mtds.each do |m|
 %>
 	def self.<%= m %>
