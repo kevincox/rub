@@ -76,15 +76,21 @@ module L::Util
 	#             The files to install.
 	# @param where [Pathname,String] The directory to install them to.  If not
 	#                                absolute it is relative to +D:prefix+
+	# @param mode [Numeric] The permissions (specified in base ten) for the
+	#                       file.  If nil the current permissions are kept.
+	# @param require [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#                Files that must be present before installing the file.  
+	#
 	# @return [Array<Pathname>] The installed files.
 	# 
 	# @example
 	#   exe = L::C.program(srcs, ['pthread'], 'bitmonitor-test')
 	#   L::Util.install exe, 'bin/'
 	#
-	def self.install(what, where)
+	def self.install(what, where, mode: nil, require: [])
 		what = R::Tool.make_set_paths what
 		where = Pathname.new(where).expand_path(D :prefix)
+		require = R::Tool.make_set_paths require
 		
 		at = ::C.tag :all
 		it = ::C.tag :install
@@ -94,7 +100,12 @@ module L::Util
 				install(f.children, where+f.basename)
 			else
 				out = where+f.basename
-				::C.generator(f, ['install', "-D", f, out], out, desc: "Installing").each do |o|
+				::C.generator(
+					Set[f].merge(require),
+					['install', "-D#{mode!=nil ? "m#{mode}" : "" }", f, out],
+					out,
+					desc: "Installing"
+				).each do |o|
 					at.require(f)
 					it.require(o)
 				end

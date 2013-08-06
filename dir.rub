@@ -25,7 +25,7 @@
 require 'rub/l/util'
 require 'rub/l/template'
 
-L::Util.install ['bin/rub'              ], 'bin/'
+L::Util.install ['bin/rub'              ], 'bin/', mode: 755
 L::Util.install ['lib/rub.rb', 'lib/rub'], 'lib/'
 
 vg = L::Template.generate_file 'lib/rub/version-generated.rb.erb', 'version-generated.rb'
