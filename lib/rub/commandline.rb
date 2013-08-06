@@ -42,37 +42,45 @@ Specify the targets to build.  If none are specified '=all' is assumed.
 
 Options:
 -o --out <dir>
-	Sets the Rub build directory.  This defaults to 'build/'.  This is
-	merely a scratch location and none of the files in this directory should
-	be used outside of Rub.  You may want to put this on fast storage (maybe
-	in RAM) to speed up complex builds.
+  Sets the Rub build directory.  This defaults to 'build/'.  This is
+  merely a scratch location and none of the files in this directory should
+  be used outside of Rub.  You may want to put this on fast storage (maybe
+  in RAM) to speed up complex builds.
 -D, --define <key>[=<value>]
-	Define a configuration option.  The key is everything up to the first
-	'=' and the value is everything after.  If the key ends in '+' it is
-	treated as a '-P'.  If there is no '=' it is treated as a flag and it
-	is set.  Latter '-D' options overwrite earlier ones.
+  Define a configuration option.  The key is everything up to the first
+  '=' and the value is everything after.  If the key ends in '+' it is
+  treated as a '-P'.  If there is no '=' it is treated as a flag and it
+  is set.  Latter '-D' options overwrite earlier ones.
 -D, --define <key>+=<value>
 -P, --push   <key>[+=<value>]
 -P, --push   <key>[=<value>]
-	Append a configuration option to a list.  If the current value is not
-	a list it is overwritten.  The key and value specification is the same
-	as for '-D' except that a '+' is not nessary and is assumed.
+  Append a configuration option to a list.  If the current value is not
+  a list it is overwritten.  The key and value specification is the same
+  as for '-D' except that a '+' is not nessary and is assumed.
 --script <script>
-	Run a script.  This script should only set define options as all of Rub
-	may not be initilized yet.  The script is executed in order with other
-	'--script', '-D' and '-P' options.
+  Run a script.  This script should only set define options as all of Rub
+  may not be initilized yet.  The script is executed in order with other
+  '--script', '-D' and '-P' options.
 --explicit-scripts
-	Only run scripts specified on the command line.  This prevents system
-	and user defaults from being used.  Use with caution because it could
-	cause a build to fail if the provided definitions don't contain enough
-	information.
+  Only run scripts specified on the command line.  This prevents system
+  and user defaults from being used.  Use with caution because it could
+  cause a build to fail if the provided definitions don't contain enough
+  information.
 --no-cache
-	Disable caching.  All state from previous runs will be discarded.  Caching
-	will still be performed inside a single run.
+  Disable caching.  All state from previous runs will be discarded.  Caching
+  will still be performed inside a single run.
 -V, --version
-	Print the version and exit.
+  Print the version and exit.
+--version-number
+  Print just the version number.
+--version-describe
+  Print a short description of the version you are running.
+--version-verbose
+  Print lots of information about the code you are running.
+--version-version-commit
+  Print the version, and if not a release commit, the current commit.
 -h, --help
-	Print this help text and exit.
+  Print this help text and exit.
 ENDHELP
 		exit
 	end
@@ -89,6 +97,7 @@ ENDHELP
 		['--script',                            GetoptLong::REQUIRED_ARGUMENT ],
 		['--explicit-scripts',                  GetoptLong::NO_ARGUMENT       ],
 		['--no-cache',                          GetoptLong::NO_ARGUMENT       ],
+		['--doc',                               GetoptLong::NO_ARGUMENT       ],
 		['--help',    '-h',                     GetoptLong::NO_ARGUMENT       ],
 		['--version', '-V', '-v',               GetoptLong::NO_ARGUMENT       ],
 		['--version-number',                    GetoptLong::NO_ARGUMENT       ],
@@ -114,9 +123,13 @@ ENDHELP
 			when '--script'
 				scripts.push [:file,   Pathname(arg)]
 			when '--explicit-scripts'
+				sysscripts = []
 			when '--no-cache'
 				@cache = false
-				sysscripts = []
+			when '--doc'
+				exec('yardoc', "#{Pathname.new(__FILE__).realpath.parent.to_s}**/*.rb")
+			when '--help'
+				help.call
 			when '--version'
 				puts R::Version.info_string
 				exit 0
@@ -132,8 +145,6 @@ ENDHELP
 			when '--version-version-commit'
 				puts R::Version.version_commit
 				exit 0
-			when '--help'
-				help.call
 		end
 	end
 	
