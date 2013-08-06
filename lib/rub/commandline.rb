@@ -69,6 +69,9 @@ Options:
 --no-cache
   Disable caching.  All state from previous runs will be discarded.  Caching
   will still be performed inside a single run.
+--doc
+  Generate documentation of installed libraries.  All additional parameters will
+  be passed to yardoc.
 -V, --version
   Print the version and exit.
 --version-number
@@ -130,6 +133,7 @@ ENDHELP
 				exec(
 					'yardoc',
 					'--default-return', 'void',
+					*ARGV,
 					"#{Pathname.new(__FILE__).realpath.parent.to_s}**/*.rb"
 				)
 			when '--help'
