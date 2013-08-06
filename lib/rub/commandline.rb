@@ -127,7 +127,11 @@ ENDHELP
 			when '--no-cache'
 				@cache = false
 			when '--doc'
-				exec('yardoc', "#{Pathname.new(__FILE__).realpath.parent.to_s}**/*.rb")
+				exec(
+					'yardoc',
+					'--default-return', 'void',
+					"#{Pathname.new(__FILE__).realpath.parent.to_s}**/*.rb"
+				)
 			when '--help'
 				help.call
 			when '--version'
