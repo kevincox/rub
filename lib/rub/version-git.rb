@@ -28,18 +28,14 @@ module R::Version
 	@@cdto = "cd '#{Pathname.new(__FILE__).realpath.dirname}'"
 	@@regex = /^v([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9]+))?(-g([0-9a-f]+))?(-(dirty))?$/
 	
-	# Pretty Program Name.
-	def self.name
-		'Rub'
-	end
-	
-	# Command name.
-	def self.slug
-		'rub'
-	end
-	
+	# The latest version tag.
 	def self.tag
 		@@tagcache ||= `#{@@cdto}; git tag -l 'v[0-9]*.*.*'`.chomp
+	end
+	
+	# The number of commits from the latest version tag.
+	def self.dist_from_tag
+		`#{@@cdto}; git rev-list HEAD ^#{tag} --count`.to_i
 	end
 
 	# Major version number.
@@ -55,34 +51,19 @@ module R::Version
 		tag.sub @@regex, '\3'
 	end
 	
-	def self.revision?
-		tag.sub @@regex, '\9'
+	# Return the latest commit that is running.
+	def self.commit
+		`#{@@cdto}; git rev-parse HEAD`.chomp
 	end
 	
+	# If anything has changed since the last commit.
 	def self.dirty?
 		`#{@@cdto}; git diff --exit-code`
 		$? != 0
 	end
 	
-	def self.rendered?
-		false
-	end
-	
-	# Version number as a list.
-	#
-	# Returns a list of three elements with the major, minor and patch numbers
-	# respectively.
-	def self.version
-		[version_major, version_minor, version_patch]
-	end
-	
 	# Returns a formatted version string.
 	def self.string
 		`#{@@cdto}; git describe --always --dirty --match 'v[0-9]*.*.*'`.chomp.sub(/^v/, '')
-	end
-
-	# Returns a version string in the format of the +--version+ command switch.
-	def self.info_string
-		"#{slug} (#{name}) #{string}"
 	end
 end

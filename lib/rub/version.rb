@@ -24,6 +24,88 @@
 
 require 'rub/modules'
 
+# Version info.
+module R::Version
+	# Pretty Program Name.
+	def self.name
+		'Rub'
+	end
+	
+	# Command name.
+	def self.slug
+		'rub'
+	end
+	
+	# Version number as a list.
+	#
+	# Returns a list of three elements with the major, minor and patch numbers
+	# respectively.
+	def self.version
+		[version_major, version_minor, version_patch]
+	end
+	
+	# Returns the version number as a string.
+	def self.number_string
+		version.join('.')
+	end
+	
+	# Latest tag and current commit.
+	def self.version_commit
+		number_string + '.' + commit[0,8]
+	end
+	
+	# Commit and if it is dirty.
+	def self.commit_dirty
+		commit + ( dirty? ? '-dirty' : '' )
+	end
+	
+	# If the version information has been prerendered.
+	#
+	# If this is false dirty information is probably pretty accurate.  If this
+	# is true they might have been changed since the rendering occurred.
+	def self.rendered?
+		false
+	end
+	
+	# Returns a version string in the format of the +--version+ command switch.
+	def self.info_string
+		"#{slug} (#{name}) #{string}"
+	end
+	
+	# Return a string describing the current version.
+	#
+	# Returns an overly verbose string giving all useful (and more) information
+	# about the current state of the source.
+	def self.verbose
+		out = []
+		
+		out << "You are using Rub, a platform and language independent build system.\n"
+		out << "https://github.com/kevincox/rub\n"
+		
+		out << "\n"
+		
+		out << "You are using commit #{commit}"
+		if dirty?
+			out << " but the source you are running has been modified since then"
+		end
+		out << ".\n"
+		
+		out << "Commit #{commit[0,8]} is"
+		if dist_from_tag > 0
+			out << " #{dist_from_tag} commits after"
+		end
+		out << " version #{number_string}.\n"
+		
+		if rendered?
+			out << ".\n"
+			out << "NOTE: This information is accurate at the time of"
+			out << "installation.  Rub can not detect changes since then."
+		end
+		
+		out.join
+	end
+end
+
 cwd = Pathname.new(__FILE__).realpath.dirname
 
 `cd '#{cwd}'; git rev-parse --git-dir > /dev/null 2>&1`

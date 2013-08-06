@@ -49,10 +49,25 @@ module C
 		Pathname.new(p).expand_path
 	end
 	
+	# Create a probably unique path segment.
+	#
+	# Creates a string in the form '$stuff/' that will probably be unique.
+	#
+	# @param seed [Object] A value to use for the folder name, keeping this the
+	#                      same across invocations allows predictable names,
+	#                      preventing unnecessary rebuilds.
 	def self.unique_segment(seed=nil)
-		Digest::SHA1.hexdigest(( seed != nil ? seed : caller_locations(1,1) ).to_s)
+		Digest::SHA1.hexdigest(( seed != nil ? seed.inspect : caller_locations(1,1) ).to_s)
 	end
 	
+	# Return a probably unique file name.
+	#
+	# This file can be used as a build target.
+	#
+	# @param base [String] The basename of the file.
+	# @param seed [Object] A value to use for the folder name, keeping this the
+	#                      same across invocations allows predictable names,
+	#                      preventing unnecessary rebuilds.
 	def self.unique_name(base, seed=nil)
 		R::Env.out_dir + 'c/unique/' + unique_segment(seed) + base
 	end

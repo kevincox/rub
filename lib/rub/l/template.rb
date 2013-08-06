@@ -28,21 +28,21 @@ require 'ostruct'
 # Templates for generating files.
 module L::Template
 	class Renderer < OpenStruct
-		def render(template)
-			ERB.new(template, nil, '-').result(binding)
+		def render(template, filename: 'ERB String')
+			t = ERB.new(template, nil, '-')
+			t.filename = filename.to_s
+			t.result(binding)
 		end
 		def render_file(f)
 			f = C.path f
 			
-			render f.read
+			render f.read, filename: f
 		end
 	end
 	
 	class TargetRenderer < R::TargetSmart
 		def initialize(inp, out, values)
 			super()
-			
-			pp inp
 			
 			@template = inp
 			@resultf  = out
@@ -66,6 +66,10 @@ module L::Template
 			@resultf.open('w') do |f|
 				f.write r
 			end
+			
+			bs = R::BuildStep.new
+			bs.desc = "Rendering #{@resultf}"
+			bs.print
 		end
 	end
 	
@@ -83,7 +87,6 @@ module L::Template
 		t = TargetRenderer.new(inp, out, values)
 		t.register
 		
-		pp out
 		return out
 	end
 end

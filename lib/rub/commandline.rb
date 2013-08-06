@@ -83,14 +83,18 @@ ENDHELP
 	@cache = true
 
 	opts = GetoptLong.new(
-		['--out',    '-o',        GetoptLong::REQUIRED_ARGUMENT ],
-		['-D', '--define',        GetoptLong::REQUIRED_ARGUMENT ],
-		['-P', '--push',          GetoptLong::REQUIRED_ARGUMENT ],
-		['--script',              GetoptLong::REQUIRED_ARGUMENT ],
-		['--explicit-scripts',    GetoptLong::NO_ARGUMENT       ],
-		['--no-cache',            GetoptLong::NO_ARGUMENT       ],
-		['--help',    '-h',       GetoptLong::NO_ARGUMENT       ],
-		['--version', '-V', '-v', GetoptLong::NO_ARGUMENT       ],
+		['--out',    '-o',                      GetoptLong::REQUIRED_ARGUMENT ],
+		['-D', '--define',                      GetoptLong::REQUIRED_ARGUMENT ],
+		['-P', '--push',                        GetoptLong::REQUIRED_ARGUMENT ],
+		['--script',                            GetoptLong::REQUIRED_ARGUMENT ],
+		['--explicit-scripts',                  GetoptLong::NO_ARGUMENT       ],
+		['--no-cache',                          GetoptLong::NO_ARGUMENT       ],
+		['--help',    '-h',                     GetoptLong::NO_ARGUMENT       ],
+		['--version', '-V', '-v',               GetoptLong::NO_ARGUMENT       ],
+		['--version-number',                    GetoptLong::NO_ARGUMENT       ],
+		['--version-describe',                  GetoptLong::NO_ARGUMENT       ],
+		['--version-verbose',                   GetoptLong::NO_ARGUMENT       ],
+		['--version-version-commit',            GetoptLong::NO_ARGUMENT       ],
 	)
 	
 	scripts = [];
@@ -115,6 +119,18 @@ ENDHELP
 				sysscripts = []
 			when '--version'
 				puts R::Version.info_string
+				exit 0
+			when '--version-number'
+				puts R::Version.number_string
+				exit 0
+			when '--version-describe'
+				puts R::Version.string
+				exit 0
+			when '--version-verbose'
+				puts R::Version.verbose
+				exit 0
+			when '--version-version-commit'
+				puts R::Version.version_commit
 				exit 0
 			when '--help'
 				help.call

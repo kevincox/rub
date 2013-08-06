@@ -187,7 +187,6 @@ module R
 		bs.cmd  = cmd
 		bs.importance = importance
 		
-		pp cmd[0]
 		cpath = C.find_command cmd[0]
 		if not cpath
 			raise "Could not find #{cmd[0]}.  Please install it or add it to your path."
@@ -242,6 +241,9 @@ module R
 					@importancei = 2
 				when :high
 					@importancei = 3
+				else
+					$stderr.puts "Unknown importance #{i.inspect}, defaulting to :high."
+					@importancei = 3
 			end
 		end
 		
@@ -256,7 +258,8 @@ module R
 			@desc   = desc
 			@status = status
 			
-			importance = :high
+			# For some reason self is needed.
+			self.importance = :high
 		end
 		
 		# Format the command.
@@ -281,8 +284,16 @@ module R
 			@importancei < 2 and return
 		
 			puts "\e[#{status==0 ? '' : '31;'}1m#{@desc}\e[0m"
-			puts format_cmd @cmd
+			puts format_cmd @cmd unless @cmd.empty?
 			Kernel::print @out
+			
+			if status != 0
+				if cmd.empty?
+					puts "\e[31;1mProcess failed.\e[0m"
+				else
+					puts "\e[31;1mProcess returned status #{status}\e[0m"
+				end
+			end
 		end
 	end
 end

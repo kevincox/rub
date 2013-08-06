@@ -218,7 +218,7 @@ module L::C
 		
 		# Compile a string.
 		#
-		# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+		# @param str     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 		#                A string containing the complete source to compile.
 		# @param obj     [Pathname,String] The path of the output file.
 		# @param options [Options] An options object.

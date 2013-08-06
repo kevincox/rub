@@ -252,7 +252,7 @@ module L::LD
 	#                One of:
 	#                [+:exe+]    An executable binary.
 	#                [+:shared+] A shared library.
-	# @param liner   [Symbol] The linker to use.  If nil, use the default.
+	# @param linker  [Symbol] The linker to use.  If nil, use the default.
 	# @param options [Options] An options object.
 	# @return [Pathname] The output file.
 	def self.link(src, libs, name, format: :exe, linker: nil, options: Options.new)
