@@ -2,6 +2,11 @@
 
 Rub is designed to be a flexible build system for all projects and languages.
 
+For the official documentation see the
+[Wiki](https://github.com/kevincox/rub/wiki), or clone it for offline viewing.
+
+	git clone https://github.com/kevincox/rub.wiki.git
+
 Rub is designed to provide a simple framework for writing build scripts and
 libraries to be used by those build scripts.  Rub does not offer any language
 specific tools but instead libraries for every language.  These libraries
