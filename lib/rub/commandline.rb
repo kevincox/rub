@@ -33,7 +33,7 @@ require 'rub'
 module R::CommandLine
 	help = lambda do
 				puts <<ENDHELP
-#{R.version_info_string}
+#{R::Version.info_string}
 
 Usage: #{$0} [options] [targets]
 
