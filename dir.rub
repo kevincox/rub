@@ -22,9 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/util'
-require 'rub/l/template'
-
 L::Util.install ['bin/rub'              ], 'bin/', mode: 755
 L::Util.install ['lib/rub.rb', 'lib/rub'], 'lib/'
 
