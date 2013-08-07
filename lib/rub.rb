@@ -45,7 +45,7 @@ require 'rub/help'
 
 ##### Add the first two scripts.
 R::Runner.do_file(R::Env.src_dir+"root.rub")
-R::Runner.do_file(R::Env.src_dir+"dir.rub")
+R::Runner.do_file(R::Env.cmd_dir+"dir.rub")
 
 R::TargetHelp.gen_help
 
