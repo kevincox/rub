@@ -68,7 +68,7 @@ module C
 	# @param seed [Object] A value to use for the folder name, keeping this the
 	#                      same across invocations allows predictable names,
 	#                      preventing unnecessary rebuilds.
-	def self.unique_name(base, seed=nil)
+	def self.unique_path(base, seed=nil)
 		R::Env.out_dir + 'c/unique/' + unique_segment(seed) + base
 	end
 	

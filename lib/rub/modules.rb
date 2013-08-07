@@ -42,7 +42,6 @@ end
 module L
 	# Auto-load libraries.
 	def self.const_missing(n)
-		pp "Loading #{n}!"
 		@looked_for ||= Set.new
 		p = "rub/l/#{n.to_s.downcase}"
 		@looked_for.include? n and raise "Library #{p} malformed, was expected to load into L::#{n}."
