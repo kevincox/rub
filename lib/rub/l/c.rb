@@ -94,6 +94,12 @@ module L::C
 		#
 		# @return [Array<Pathname>]
 		cattr_reader :include_dirs
+	
+		# @!scope class
+		# A list of libraries to link.
+		#
+		# @return [Array<String,Pathname>]
+		cattr_reader :libs
 		
 		# @!scope class
 		# A list of macros to define.  nil can be used to undefine a macro.
@@ -101,12 +107,13 @@ module L::C
 		# @return [Hash{String=>String,true,nil}]
 		cattr_reader :define
 		
-		@@debug = @@profile = !!D[:debug]
-		@@optimize = @@debug ? :none : :full
+		@debug = @profile = !!D[:debug]
+		@optimize = @debug ? :none : :full
 		
-		@@include_dirs = []
-		@@define = {
-			@@debug ? 'DEBUG' : 'NDEBUG' => true,
+		@include_dirs = []
+		@libs         = []
+		@define = {
+			@debug ? 'DEBUG' : 'NDEBUG' => true,
 		}
 		
 		# Optimization level
@@ -148,6 +155,13 @@ module L::C
 		# @return (see include_dirs)
 		# @see include_dirs
 		attr_reader :include_dirs
+	
+		# @!scope class
+		# A list of libraries to link.
+		#
+		# @return (see include_dirs)
+		# @see include_dirs
+		attr_reader :libs
 		
 		# Macro definitions.
 		#
@@ -158,14 +172,15 @@ module L::C
 		attr_accessor :define
 		
 		def initialize
-			@optimize     = @@optimize
-			@optimize_for = @@optimize_for
+			@optimize     = Options.optimize
+			@optimize_for = Options.optimize_for
 			
-			@debug   = @@debug
-			@profile = @@profile
+			@debug   = Options.debug
+			@profile = Options.profile
 			
-			@include_dirs = @@include_dirs.dup
-			@define       = @@define.dup
+			@include_dirs = Options.include_dirs.dup
+			@libs         = Options.libs.dup
+			@define       = Options.define.dup
 		end
 	end
 	
@@ -309,9 +324,8 @@ EOF
 		#                The source files to compile and generated headers.
 		# @param options [Options] An options object.
 		# @return [Set<Pathname>] The resulting object files.
-	def self.compile(src, compiler: nil, options: nil)
+	def self.compile(src, compiler: nil, options: Options)
 		src = R::Tool.make_set_paths src
-		options ||= Options.new
 		
 		headers = Set.new
 		src.keep_if do |s|
@@ -410,19 +424,18 @@ EOF
 	#
 	# @param src      [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 	#                 The source files to compile and generated headers.
-	# @param lib      [Set<String>,Array<String>,String] Libraries to link with.
 	# @param name     [Pathname,String] The basename of the output file.
 	# @param options  [Options] An options object for the compiler.
 	# @param loptions [L::LD::Options] An options object for the linker.
 	# @return [Pathname] The resulting executable.
-	def self.program(src, lib, name, 
+	def self.program(src, name, 
 	                 compiler: @prefered_compiler,
-	                 options: nil,
+	                 options: Options,
 	                 loptions: nil
 	                )
 		compiler = compiler compiler
 		
 		obj = compile(src, compiler: compiler, options: options)
-		L::LD.link(obj, lib, name, format: :exe, linker: compiler.linker, options: loptions)
+		L::LD.link(obj, options.libs, name, format: :exe, linker: compiler.linker, options: loptions)
 	end
 end
