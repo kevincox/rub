@@ -420,6 +420,8 @@ EOF
 	                 options: nil,
 	                 loptions: nil
 	                )
+		compiler = compiler compiler
+		
 		obj = compile(src, compiler: compiler, options: options)
 		L::LD.link(obj, lib, name, format: :exe, linker: compiler.linker, options: loptions)
 	end
