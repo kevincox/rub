@@ -160,9 +160,9 @@ module C
 	end
 	
 	##### Create default tags.
-	::C.tag(:all)    .description = 'All targets.'
-	::C.tag(:install).description = 'Install the project.'
-	::C.tag(:none)   .description = 'Do nothing.'
+	tag(:all)    .description = 'All targets.'
+	tag(:install).description = 'Install the project.'
+	tag(:none)   .description = 'Do nothing.'
 	
 	# Add a generator to the build
 	#

@@ -356,7 +356,7 @@ EOF
 		end
 		
 		def incs_from_cpp
-			c = ::R::Command.new [
+			c = R::Command.new [
 				::C.find_command('cpp'),
 				#'-H',
 				*@opt.include_dirs.map{|i| "-I#{i}"},

@@ -38,7 +38,7 @@ module L::LD
 		# Find the linker command.
 		# @return [Pathname,nil] The command.
 		def self.find
-			::C.find_command 'ld'
+			C.find_command 'ld'
 		end
 		
 		def self.link_command(files, libs, out, format: :exe, options: Options.new)

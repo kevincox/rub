@@ -204,7 +204,7 @@ module L::LD
 		# @param options [Options] The options to use when linking.
 		# @return [Pathname] The path to the library.
 		def self.find_lib(name, options: Options.new)
-			whereis = ::C::find_command('whereis') or return nil
+			whereis = C::find_command('whereis') or return nil
 			
 			c = R::Command.new [whereis, '-b', "lib#{name}"]
 			c.run or return nil
@@ -266,7 +266,7 @@ module L::LD
 		out = linker.full_name name, format
 		out = R::Env.out_dir + 'l/ld/' + out
 		
-		::C::generator(src+libfs, linker.link_command(src, libs, out, format: format, options: options), out)
+		C::generator(src+libfs, linker.link_command(src, libs, out, format: format, options: options), out)
 		
 		out
 	end

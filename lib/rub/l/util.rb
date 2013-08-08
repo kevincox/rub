@@ -92,15 +92,15 @@ module L::Util
 		where = Pathname.new(where).expand_path(D :prefix)
 		require = R::Tool.make_set_paths require
 		
-		at = ::C.tag :all
-		it = ::C.tag :install
+		at = C.tag :all
+		it = C.tag :install
 		
 		what.map do |f|
 			if f.directory?
 				install(f.children, where+f.basename)
 			else
 				out = where+f.basename
-				::C.generator(
+				C.generator(
 					Set[f].merge(require),
 					['install', "-D#{mode!=nil ? "m#{mode}" : "" }", f, out],
 					out,
