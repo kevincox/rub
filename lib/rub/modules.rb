@@ -42,13 +42,12 @@ end
 module L
 	# Auto-load libraries.
 	def self.const_missing(n)
-		@looked_for ||= Set.new
+		#pp n
 		p = "rub/l/#{n.to_s.downcase}"
-		@looked_for.include? n and raise "Library #{p} malformed, was expected to load into L::#{n}."
-		@looked_for << n
 		
 		require p
-		const_get(n)
+		const_defined?(n, false) or raise "Library #{p} malformed, was expected to load into L::#{n}."
+		const_get(n, false)
 	end
 end
 
@@ -56,7 +55,7 @@ end
 #
 # Internal functions intended for library developers only.  Eventually
 # this will be only for Rub itself and the functions for library developers will
-# be moved into ::C.
+# be moved into {C}.
 module R
 
 end
