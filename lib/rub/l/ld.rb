@@ -83,10 +83,10 @@ module L::LD
 		# @return [Array<String>] A list of arguments to add.
 		cattr_accessor :args
 		
-		@@optimize = D[:debug] ? :none : :full
-		@@library_dirs = []
-		@@static = false
-		@@args = []
+		@optimize = D[:debug] ? :none : :full
+		@library_dirs = []
+		@static = false
+		@args = []
 		
 		# Optimization level
 		#
@@ -121,10 +121,10 @@ module L::LD
 		attr_accessor  :args
 		
 		def initialize
-			@optimize     = @@optimize
-			@static       = @@static
-			@library_dirs = @@library_dirs.dup
-			@args         = @@args.dup
+			@optimize     = Options.optimize
+			@static       = Options.static
+			@library_dirs = Options.library_dirs.dup
+			@args         = Options.args.dup
 		end
 	end
 	
@@ -156,7 +156,7 @@ module L::LD
 		#                [+:shared+] A shared library.
 		# @param options [Options] An options object.
 		# @return [Set<Pathname>] The output file.
-		def self.link_command(files, libs, out, format: :exe, options: Options.new)
+		def self.link_command(files, libs, out, format: :exe, options: Options)
 			raise NotImplementedError
 		end
 		
@@ -164,7 +164,7 @@ module L::LD
 		#
 		# @param (see link_command)
 		# @return [R::Command] the process that linked the file.
-		def self.do_link(files, libs, out, format: :exe, options: Options.new)
+		def self.do_link(files, libs, out, format: :exe, options: Options)
 			c = R::Command.new(link_command(files, libs, out, format: :exe, options: options))
 			c.run
 			c
@@ -174,7 +174,7 @@ module L::LD
 		#
 		# @param (see link_command)
 		# @return [true,false] true if the link succeeded.
-		def self.test_link(files, libs, format: :exe, options: Options.new)
+		def self.test_link(files, libs, format: :exe, options: Options)
 			c = do_link(files, libs, File::NULL, format: :exe, options: options)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
@@ -203,7 +203,7 @@ module L::LD
 		# @param name [String] The basename of the library.
 		# @param options [Options] The options to use when linking.
 		# @return [Pathname] The path to the library.
-		def self.find_lib(name, options: Options.new)
+		def self.find_lib(name, options: Options)
 			whereis = C::find_command('whereis') or return nil
 			
 			c = R::Command.new [whereis, '-b', "lib#{name}"]
@@ -255,7 +255,7 @@ module L::LD
 	# @param linker  [Symbol] The linker to use.  If nil, use the default.
 	# @param options [Options] An options object.
 	# @return [Pathname] The output file.
-	def self.link(src, libs, name, format: :exe, linker: nil, options: Options.new)
+	def self.link(src, libs, name, format: :exe, linker: nil, options: Options)
 		src  = R::Tool.make_set_paths src
 		libs = R::Tool.make_set libs
 		
