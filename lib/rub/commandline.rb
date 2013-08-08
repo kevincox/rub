@@ -134,7 +134,7 @@ ENDHELP
 					'yardoc',
 					'--default-return', 'void',
 					*ARGV,
-					"#{Pathname.new(__FILE__).realpath.parent.to_s}**/*.rb"
+					"#{Pathname.new(__FILE__).realpath.parent.to_s}/**/*.rb"
 				)
 			when '--help'
 				help.call
