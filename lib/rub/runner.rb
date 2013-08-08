@@ -48,8 +48,9 @@ module R::Runner
 		
 		@@loaded[f] = true
 		
-		Dir.chdir f.dirname
-		load f.to_s
+		Dir.chdir f.dirname do
+			load f.to_s
+		end
 	end
 end
 
