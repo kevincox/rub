@@ -64,7 +64,7 @@ Options:
   Prepend a configuration option to a list.  If the current value is not
   a list it is overwritten.  The key and value specification is the same
   as for '-D' except that a '^' is not nessary and is assumed.
---script <script>
+-S, --script <script>
   Run a script.  This script should only set define options as all of Rub
   may not be initilized yet.  The script is executed in order with other
   '--script', '-D' and '-P' options.
@@ -105,7 +105,7 @@ ENDHELP
 		['-D', '--define',                      GetoptLong::REQUIRED_ARGUMENT ],
 		['-A', '--append',                      GetoptLong::REQUIRED_ARGUMENT ],
 		['-P', '--prepend',                     GetoptLong::REQUIRED_ARGUMENT ],
-		['--script',                            GetoptLong::REQUIRED_ARGUMENT ],
+		['-S', '--script',                      GetoptLong::REQUIRED_ARGUMENT ],
 		['--explicit-scripts',                  GetoptLong::NO_ARGUMENT       ],
 		['--no-cache',                          GetoptLong::NO_ARGUMENT       ],
 		['--doc',                               GetoptLong::NO_ARGUMENT       ],
@@ -133,7 +133,7 @@ ENDHELP
 				scripts.push [:append,  arg]
 			when '-P'
 				scripts.push [:prepend, arg]
-			when '--script'
+			when '-S'
 				scripts.push [:file,   Pathname(arg)]
 			when '--explicit-scripts'
 				sysscripts = []
