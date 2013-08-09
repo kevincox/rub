@@ -119,8 +119,8 @@ ENDHELP
 	
 	scripts = [];
 	sysscripts = [
-		[:file, Pathname.new("/etc/rub/config.rb")],
-		[:file, Pathname.new(Dir.home())+".config/rub/config.rb"],
+		[:file, Pathname.new("/etc/rub/config.rub")],
+		[:file, Pathname.new(Dir.home())+".config/rub/config.rub"],
 	].keep_if { |t, n| n.exist? }
 	
 	opts.each do |opt, arg|
