@@ -92,5 +92,5 @@ module L::C
 	end
 	L::C.compilers[:gcc] = CompilerGCC
 	
-	D.push(:l_c_compiler, :gcc)
+	D.append(:l_c_compiler, :gcc)
 end

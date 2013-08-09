@@ -72,8 +72,10 @@ module D
 		
 			k, f, v = k.partition '='
 			
-			if k.end_with?('+') and not f.empty?
-				return push(k[0..-2], v)
+			if    k.end_with?('+') and not f.empty?
+				return append(k[0..-2], v)
+			elsif k.end_with?('^') and not f.empty?
+				return prepend(k[0..-2], v)
 			end
 		end
 		
@@ -89,7 +91,7 @@ module D
 		alias_method '[]=', :define
 	end
 	
-	# Push a configuration option onto a value.
+	# Append a configuration option onto a value.
 	#
 	# @param k [String] The key, or if +v+ is nil a string to parse.
 	# @param v [String,nil] The value
@@ -104,19 +106,19 @@ module D
 	# value.
 	#
 	# @example
-	#   D.push('k1', 'v1')
+	#   D.append('k1', 'v1')
 	#   D[:k1] #=> ["v1"]
-	#   D.push('k1', 'v2')
+	#   D.append('k1', 'v2')
 	#   D[:k1] #=> ["v1", "v2"]
-	#   D.push('k2=v3')
-	#   D.push('k2+=v4')
-	#   D.push('k2+=')
+	#   D.append('k2=v3')
+	#   D.append('k2+=v4')
+	#   D.append('k2+=')
 	#   D[:k2] #=> ["v3", "v4", ""]
 	#   
-	#   D.push('w1+')
+	#   D.append('w1+')
 	#   D[:w1]   #=> nil
 	#   D['w1+'] #=> [true]
-	def self.push(k, v=nil)
+	def self.append(k, v=nil)
 		if v == nil
 			k, f, v = k.partition '='
 			
@@ -134,6 +136,53 @@ module D
 		@@map[k].is_a?(Array) or @@map[k] = []
 		
 		@@map[k].push(v)
+	end
+	
+	# Prepend a configuration option onto a value.
+	#
+	# @param k [String] The key, or if +v+ is nil a string to parse.
+	# @param v [String,nil] The value
+	# @return [String] The value.
+	#
+	# If +v+ is non-nil +k+ is the key and +v+ is the value.  If +v+ is nil
+	# k must be a string and it is parsed to find the key and value.
+	#
+	# If there is a '=' in the string everything before the first '=' is used as
+	# the key and everything after the value.  If the key ends is '^' it is
+	# dropped.  If there is no '=' +k+ is used as the key and +true+ as the
+	# value.
+	#
+	# @example
+	#   D.prepend('k1', 'v1')
+	#   D[:k1] #=> ["v1"]
+	#   D.prepend('k1', 'v2')
+	#   D[:k1] #=> ["v2", "v1"]
+	#   D.prepend('k2=v3')
+	#   D.prepend('k2^=v4')
+	#   D.prepend('k2+=')
+	#   D[:k2] #=> ["", "v4", "v3",]
+	#   
+	#   D.prepend('w1^')
+	#   D[:w1]   #=> nil
+	#   D['w1^'] #=> [true]
+	def self.prepend(k, v=nil)
+		if v == nil
+			k, f, v = k.partition '='
+			
+			if k.end_with?('^') and not f.empty?
+				k = k[0..-2]
+			end
+		end
+		
+		k = k.to_sym
+		
+		if f == ''
+			v = true
+		end
+		
+		@@map[k].is_a?(Array) or @@map[k] = []
+		
+		@@map[k].unshift(v)
 	end
 	
 	# Retrieve a defined value.

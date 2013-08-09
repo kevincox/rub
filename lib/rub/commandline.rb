@@ -48,15 +48,22 @@ Options:
   in RAM) to speed up complex builds.
 -D, --define <key>[=<value>]
   Define a configuration option.  The key is everything up to the first
-  '=' and the value is everything after.  If the key ends in '+' it is
-  treated as a '-P'.  If there is no '=' it is treated as a flag and it
-  is set.  Latter '-D' options overwrite earlier ones.
+  '=' and the value is everything after.  If the character before the '=' is '+'
+  or '^' it is treated as a '-A' or '-P' respectivly.  If there is no '=' it
+  is treated as a flag and it is set.  Latter '-D' options overwrite earlier
+  ones.
 -D, --define <key>+=<value>
--P, --push   <key>[+=<value>]
--P, --push   <key>[=<value>]
+-A, --append <key>[+=<value>]
+-A, --append <key>[=<value>]
   Append a configuration option to a list.  If the current value is not
   a list it is overwritten.  The key and value specification is the same
   as for '-D' except that a '+' is not nessary and is assumed.
+-D, --define  <key>^=<value>
+-P, --prepend <key>[^=<value>]
+-P, --prepend <key>[=<value>]
+  Prepend a configuration option to a list.  If the current value is not
+  a list it is overwritten.  The key and value specification is the same
+  as for '-D' except that a '^' is not nessary and is assumed.
 --script <script>
   Run a script.  This script should only set define options as all of Rub
   may not be initilized yet.  The script is executed in order with other
@@ -96,7 +103,8 @@ ENDHELP
 	opts = GetoptLong.new(
 		['--out',    '-o',                      GetoptLong::REQUIRED_ARGUMENT ],
 		['-D', '--define',                      GetoptLong::REQUIRED_ARGUMENT ],
-		['-P', '--push',                        GetoptLong::REQUIRED_ARGUMENT ],
+		['-A', '--append',                      GetoptLong::REQUIRED_ARGUMENT ],
+		['-P', '--prepend',                     GetoptLong::REQUIRED_ARGUMENT ],
 		['--script',                            GetoptLong::REQUIRED_ARGUMENT ],
 		['--explicit-scripts',                  GetoptLong::NO_ARGUMENT       ],
 		['--no-cache',                          GetoptLong::NO_ARGUMENT       ],
@@ -120,9 +128,11 @@ ENDHELP
 			when '--out'
 				Rub::Env.out_dir = Rub::Env.cmd_dir + arg
 			when '-D'
-				scripts.push [:define, arg]
+				scripts.push [:define,  arg]
+			when '-A'
+				scripts.push [:append,  arg]
 			when '-P'
-				scripts.push [:push,   arg]
+				scripts.push [:prepend, arg]
 			when '--script'
 				scripts.push [:file,   Pathname(arg)]
 			when '--explicit-scripts'
@@ -167,8 +177,10 @@ ENDHELP
 				load a
 			when :define
 				D.define(a)
-			when :push
-				D.push(a)
+			when :append
+				D.append(a)
+			when :prepend
+				D.prepend(a)
 		end
 	end
 end

@@ -22,6 +22,9 @@
 #                                                                              #
 ################################################################################
 
+pp D.map
+exit
+
 L::Util.install ['bin/rub'              ], 'bin/', mode: 755
 L::Util.install ['lib/rub.rb', 'lib/rub'], 'lib/'
 
