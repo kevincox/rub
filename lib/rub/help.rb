@@ -23,27 +23,14 @@
 ################################################################################
 
 require 'pathname'
+require 'singleton'
 
 module R
 	class TargetHelp < C::TargetTag
-		HELP_HELP      = 'help-help'     .to_sym
-		HELP_TAG       = 'help-tag'      .to_sym
-		HELP_INSTALLED = 'help-installed'.to_sym
-		HELP_BUILT     = 'help-built'    .to_sym
-		
-		HELP           = 'help'          .to_sym
-		HELP_ALL       = 'help-all'      .to_sym
-		
-		@@map = {
-			HELP_HELP      => 1<<0,
-			HELP_TAG       => 1<<1,
-			HELP_INSTALLED => 1<<2,
-			HELP_BUILT     => 1<<3,
-		}
-		@@map[HELP]     = @@map[HELP_HELP] | @@map[HELP_TAG]
-		@@map[HELP_ALL] = @@map[HELP_TAG] | @@map[HELP_INSTALLED] | @@map[HELP_BUILT]
-		
-		def self.gen_help
+		@@tag = nil
+		def gen_help
+			@@tag and return
+			
 			@@tag = Set.new
 			@@bld = Set.new
 			@@ins = Set.new
@@ -63,24 +50,19 @@ module R
 					@@src << [p, t]
 				end
 			end
-			
-			TargetHelp.new(HELP_HELP).register
-			TargetHelp.new(HELP_TAG).register
-			TargetHelp.new(HELP_INSTALLED).register
-			TargetHelp.new(HELP_BUILT).register
-			
-			TargetHelp.new(HELP).register
-			TargetHelp.new(HELP_ALL).register
 		end
 		
 		def initialize(t)
-			super
+			super t.to_sym
+			
+			register
 		end
 		
 		def print_target(ta)
 			p, t = ta
 			ps = if p.is_a? Symbol
-				p.inspect
+				#p.inspect
+				":#{p}"
 			else
 				p.to_s
 			end
@@ -99,28 +81,98 @@ module R
 		end
 		
 		def build
-			if @@map[tag] & @@map[HELP_HELP.to_sym] != 0
-				puts <<'EOS'
-Help:
-  Just displaying tags.  If you want to see more see:
-   - :help-tag
-   - :help-installed
-   - :help-built
-   - :help-all
-EOS
-			end
-			if @@map[tag] & @@map[HELP_TAG.to_sym] != 0
-				puts 'Tags:'
-				print_targets @@tag
-			end
-			if @@map[tag] & @@map[HELP_INSTALLED.to_sym] != 0
-				puts 'Install Targets:'
-				print_targets @@ins
-			end
-			if @@map[tag] & @@map[HELP_BUILT.to_sym] != 0
-				puts 'Build Targets:'
-				print_targets @@bld
-			end
+			gen_help
 		end
 	end
+	
+	class TargetHelpHelp < TargetHelp
+		include Singleton
+		
+		def initialize
+			super :help
+		end
+		
+		def build
+			super
+			
+			puts <<'EOS'
+Help:
+  Just displaying tags.  If you want to see more see:
+    :help-tag
+    :help-installed
+    :help-built
+    :help-all
+EOS
+			R.get_target('help-tag'.to_sym).build
+		end
+	end
+	TargetHelpHelp.instance
+	
+	class TargetHelpTag < TargetHelp
+		include Singleton
+		
+		def initialize
+			super 'help-tag'
+		end
+		
+		def build
+			super
+		
+			puts 'Tags:'
+			print_targets @@tag
+		end
+	end
+	TargetHelpTag.instance
+	
+	class TargetHelpInstalled < TargetHelp
+		include Singleton
+		
+		def initialize
+			super 'help-installed'
+		end
+		
+		def build
+			super
+		
+			puts 'Installed:'
+			print_targets @@ins
+		end
+	end
+	TargetHelpInstalled.instance
+	
+	class TargetHelpBuilt < TargetHelp
+		include Singleton
+		
+		def initialize
+			super 'help-built'
+		end
+		
+		def build
+			super
+		
+			puts 'Build Targets:'
+			print_targets @@bld
+		end
+	end
+	TargetHelpBuilt.instance
+	
+	class TargetHelpAll < TargetHelp
+		include Singleton
+		
+		def initialize
+			super 'help-all'
+		end
+		
+		def build
+			super
+			
+			[
+				'help-tag',
+				'help-installed',
+				'help-built',
+			].each{|t| R.get_target(t.to_sym).build }
+		end
+	end
+	TargetHelpAll.instance
+	
 end

@@ -48,8 +48,6 @@ require 'rub/help'
 R::Runner.do_file(R::Env.src_dir+"root.rub")
 R::Runner.do_file(R::Env.cmd_dir+"dir.rub")
 
-R::TargetHelp.gen_help
-
 ARGV.empty? and ARGV << ':all'
 
 ARGV.each do |t|
