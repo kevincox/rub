@@ -27,3 +27,4 @@ L::Util.install ['lib/rub.rb', 'lib/rub'], 'lib/'
 
 vg = L::Template.generate_file 'lib/rub/version-generated.rb.erb', 'version-generated.rb'
 L::Util.install vg, 'lib/rub/'
+

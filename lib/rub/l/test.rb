@@ -110,8 +110,7 @@ module L::Test
 		end
 		
 		def build_self
-			out = StringIO.new
-			out.close_read
+			out = StringIO.new("", "w")
 		
 			options = {
 				io:      out,
