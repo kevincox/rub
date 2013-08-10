@@ -99,7 +99,6 @@ module R
 			@stdoutr, @stdoutw = IO.pipe
 			@stderrr, @stderrw = IO.pipe
 			
-			@stdin  = ""
 			@stdout = ""
 			@stderr = ""
 			@status = nil
