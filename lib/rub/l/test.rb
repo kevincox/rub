@@ -37,6 +37,11 @@ class Minitest::Runnable
 		@@rub_oldinherited.call klass
 	end
 	
+	# The Rub target, this is set automatically.
+	#
+	# @return [R::Target]
+	cattr_accessor :rub_target
+	
 	# Add a dependency
 	#
 	# Add a dependency to the test.  It will be available before the test is
@@ -44,7 +49,7 @@ class Minitest::Runnable
 	#
 	# @param d [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 	#          The dependencies.
-	def self.rub_add_dependency(d)
+	def self.rub_require(d)
 		d = R::Tool.make_set_paths d
 		
 		@rub_deps ||= Set.new
@@ -86,27 +91,31 @@ end
 #   end
 #
 module L::Test
-	C.tag(:test)
-	
-	class TargetTestCase < R::Target
+	class TargetTest < R::Target
 		def input
-			pp @klass.rub_get_dependancies
-			@klass.rub_get_dependancies
+			Minitest::Runnable.runnables.map do |r|
+				r.rub_target
+			end.compact.map do |t|
+				t.input.to_a
+			end.flatten.to_set
 		end
 	
 		def output
-			Set[@tag]
+			Set[:test]
 		end
 	
-		def initialize(klass, t)
+		def initialize
 			super()
 			
-			@tag = t.to_sym
-			@klass = klass
-			
-			C.tag(:test).require(@tag)
-			
 			register
+		end
+		
+		def run_tests(reporter, options)
+			Minitest::Runnable.runnables.each do |r|
+				r.rub_target or next
+				
+				r.rub_target.run_tests reporter, options
+			end
 		end
 		
 		def build_self
@@ -122,7 +131,7 @@ module L::Test
 			reporter << Minitest::SummaryReporter .new(options[:io], options)
 
 			reporter.start
-			Minitest.__run reporter, options
+			run_tests reporter, options
 			reporter.report
 			
 			bs = R::BuildStep.new
@@ -130,6 +139,30 @@ module L::Test
 			bs.status = reporter.passed? ? 0 : 1
 			bs.out = out.string
 			bs.print
+		end
+	end
+	TargetTest.new # Create :test
+	
+	class TargetTestCase < TargetTest
+		def input
+			@klass.rub_get_dependancies
+		end
+	
+		def output
+			Set[@tag]
+		end
+	
+		def initialize(klass, t)
+			@tag = t.to_sym
+			@klass = klass
+			
+			klass.rub_target = self
+			
+			super()
+		end
+		
+		def run_tests(reporter, options)
+			@klass.run reporter, options
 		end
 	end
 	
