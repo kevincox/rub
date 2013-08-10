@@ -22,90 +22,77 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/ld'
+require 'rub/l/c'
 
-module L::LD
-	LinkerLD = Linker.clone
-	module LinkerLD
+module L::C
+	CompilerClang = Compiler.clone
+	module CompilerClang
+		
 		def self.name
-			:ld
+			:clang
 		end
 		
 		def self.available?
 			!!find
 		end
 		
-		# Find the linker command.
-		# @return [Pathname,nil] The command.
 		def self.find
-			C.find_command 'ld'
+			@exe and return @exe
+		
+			@exe = ::C.find_command 'clang'
 		end
 		
-		def self.link_command(files, libs, out, format: :exe, options: Options)
-			files = R::Tool.make_set_paths files
-			libs  = R::Tool.make_set libs
-			out = C.path out
-		
-			c = [find, "-o#{out}"]
-			
-			c << options.args
-			
-			c << case format
-				when :exe
-					[]
-				when :shared
-					['-shared']
-				else
-					raise "Unknown/unsupported output #{format}."
-			end
-			
-			c << case options.optimize
-				when :none
-					'-O0'
-				when :some
-					'-O0'
-				when :full
-					'-O1'
-				when :max
-					'-O9'
-				else
-					raise "Invalid optimization level #{options.optimize}."
-			end
-			
-			c << if options.static
-				'-static'
-			else
-				[]
-			end
-			
-			c << options.library_dirs.map{|d| "-L#{d}"}
-			
-			c << libs.map{|l| "-l#{l}" }
-			c << files.to_a
-			
-			c.flatten
+		def self.linker
+			:clang
 		end
 		
-		#def self.find_lib(name, options: Options.new)
-		#	options = options.deep_clone
-		#	options.optimize = :none
-		#	options.args << '-t'
-		#	
-		#	
-		#	if options.static # The default way is best for static linking.
-		#		return Linker.find_lib(name, options: options)
-		#	end
-		#	
-		#	pp c = do_link([], [name], File::NULL, options: options)
-		#	
-		#	c.success? or return nil
-		#	
-		#	c.stdout.match(Regexp.new"^-l#{name} \\((.*)\\)$") do |m|
-		#		m[1]
-		#	end
-		#end
+		@@o_flags = {
+			:none=>'-O0',
+			:some=>'-O1',
+			:full=>'-O2',
+			:max =>'-O3',
+		}
+		@@of_flags = {
+			nil=>[],
+			:speed=>[],
+			:size=>'-Os',
+		}
+		
+		def self.generate_flags(options)
+			f = []
+			
+			#f << '-emit-llvm'
+			
+			f << (@@o_flags[options.optimize    ] || [])
+			f << (@@o_flags[options.optimize_for] || [])
+			
+			f << options.include_dirs.map do |d|
+				"-I#{d}"
+			end
+			f << options.define.map do |k, v|
+				if v
+					# -Dk if v is true else -Dk=v.
+					"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
+				else
+					"-U#{k}"
+				end
+			end
+			
+			f.flatten!
+		end
+		
+		def self.compile_command(src, obj, options: Options.new)
+			[find, '-c', *generate_flags(options), "-o#{obj}", *src]
+		end
+		
+		def self.do_compile_string(str, obj, options: Options.new)
+			c = R::Command.new [find, '-c', '-xc', *generate_flags(options), '-o', obj, '-']
+			c.stdin = str
+			c.run
+			c
+		end
 	end
-	L::LD.linkers[:ld] = LinkerLD
+	L::C.compilers[:clang] = CompilerClang
 	
-	D.append(:l_ld_linker, :ld)
+	D.append(:l_c_compiler, :clang)
 end

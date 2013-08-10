@@ -47,7 +47,7 @@ module L::C
 		end
 		
 		@@o_flags = {
-			:none=>'-O0',
+			:none=> D[:debug] ? '-Og' : '-O0',
 			:some=>'-O1',
 			:full=>'-O2',
 			:max =>'-O3',

@@ -62,13 +62,13 @@ module L::LD
 			
 			c << case options.optimize
 				when :none
-					'-O0'
+					D:debug ? '-Og' : '-O0'
 				when :some
-					'-O0'
-				when :full
 					'-O1'
+				when :full
+					'-O2'
 				when :max
-					'-O9'
+					'-O3'
 				else
 					raise "Invalid optimization level #{options.optimize}."
 			end

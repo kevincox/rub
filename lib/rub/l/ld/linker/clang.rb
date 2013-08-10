@@ -25,26 +25,27 @@
 require 'rub/l/ld'
 
 module L::LD
-	LinkerLD = Linker.clone
-	module LinkerLD
+	LinkerClang = Linker.clone
+	module LinkerClang
 		def self.name
-			:ld
+			:clang
 		end
 		
 		def self.available?
 			!!find
 		end
 		
-		# Find the linker command.
-		# @return [Pathname,nil] The command.
+		# Find the linker executable.
+		# @return [Pathname,nil] The path of the executable.
 		def self.find
-			C.find_command 'ld'
+			C.find_command 'clang'
 		end
 		
-		def self.link_command(files, libs, out, format: :exe, options: Options)
+		def self.link_command(files, libs, out, format: :exe, options: nil)
 			files = R::Tool.make_set_paths files
-			libs  = R::Tool.make_set libs
-			out = C.path out
+			libs  = R::Tool.make_set       libs
+			out = C.path(out)
+			options ||= Options.new
 		
 			c = [find, "-o#{out}"]
 			
@@ -63,11 +64,11 @@ module L::LD
 				when :none
 					'-O0'
 				when :some
-					'-O0'
+					'-O2'
 				when :full
-					'-O1'
+					'-O3'
 				when :max
-					'-O9'
+					'-O4'
 				else
 					raise "Invalid optimization level #{options.optimize}."
 			end
@@ -105,7 +106,5 @@ module L::LD
 		#	end
 		#end
 	end
-	L::LD.linkers[:ld] = LinkerLD
-	
-	D.append(:l_ld_linker, :ld)
+	L::LD.linkers[:clang] = LinkerClang
 end

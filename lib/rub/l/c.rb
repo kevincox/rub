@@ -431,7 +431,7 @@ EOF
 	def self.program(src, name, 
 	                 compiler: @prefered_compiler,
 	                 options: Options,
-	                 loptions: nil
+	                 loptions: L::LD::Options
 	                )
 		compiler = compiler compiler
 		

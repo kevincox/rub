@@ -69,6 +69,14 @@ module R
 			cmds.map{|c| add_cmd c}
 		end
 		
+		def hash_contents
+			super + Digest::SHA1.digest(
+				@cmd.map do |c| 
+					c.map{|a| Digest::SHA1.digest(a.to_s) }
+				end.join
+			)
+		end
+		
 		def build_self
 			if clean?
 				#p "#{self.inspect}: Already clean, not rebuilding."
