@@ -91,6 +91,45 @@ end
 #   end
 #
 module L::Test
+	class Reporter < Minitest::AbstractReporter
+		def initialize(opt = {})
+			@passed = true
+			
+			@io = opt[:io] || $stdout
+		end
+	
+		##
+		# Starts reporting on the run.
+		def start
+		end
+		
+		##
+		# Record a result and output the Runnable#result_code. Stores the
+		# result of the run if the run did not pass.
+		def record(r)
+			pres = if r.skipped?
+				"\e[34;1mSKIP\e[0m"
+			elsif r.passed?
+				"\e[32;1mPASS\e[0m"
+			else
+				"\e[31;1mFAIL\e[0m"
+			end
+			
+			@io.puts "[#{pres}] #{r.class}##{r.name}"
+		end
+		
+		##
+		# Outputs the summary of the run.
+		def report
+		end
+		
+		##
+		# Did this run pass?
+		def passed?
+			@passed
+		end
+	end
+	
 	class TargetTest < R::Target
 		def input
 			Minitest::Runnable.runnables.map do |r|
@@ -126,16 +165,17 @@ module L::Test
 				verbose: true
 			}
 
-			reporter =  Minitest::CompositeReporter.new
-			reporter << Minitest::ProgressReporter.new(options[:io], options)
-			reporter << Minitest::SummaryReporter .new(options[:io], options)
-
+			reporter = Minitest::CompositeReporter.new
+			reporter << Minitest::SummaryReporter.new(options[:io], options)
+			
 			reporter.start
+			out.string = '' # We don't want the start text.
+			
 			run_tests reporter, options
 			reporter.report
 			
 			bs = R::BuildStep.new
-			bs.desc = "Running test case :#{@tag}"
+			bs.desc = "Test Results"
 			bs.status = reporter.passed? ? 0 : 1
 			bs.out = out.string
 			bs.print
@@ -162,7 +202,23 @@ module L::Test
 		end
 		
 		def run_tests(reporter, options)
+			out = StringIO.new("", "w")
+			options = {
+				io:      out,
+				verbose: true
+			}
+			pr = Reporter.new(options)
+			reporter << pr
+			
 			@klass.run reporter, options
+			
+			reporter.reporters.delete pr
+			
+			bs = R::BuildStep.new
+			bs.desc = "Running test case :#{@tag}"
+			bs.out  = out.string
+			bs.status = pr.passed? ? 0 : 1
+			bs.print
 		end
 	end
 	
