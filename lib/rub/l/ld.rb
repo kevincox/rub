@@ -206,7 +206,7 @@ module L::LD
 		def self.find_lib(name, options: Options)
 			whereis = C::find_command('whereis') or return nil
 			
-			c = R::Command.new [whereis, '-b', "lib#{name}"]
+			c = R::Command.new [whereis, '-b', full_name(name, options.static ? :shared : :static)]
 			c.run or return nil
 			
 			l = c.stdout.split.drop(1).keep_if do |l|
