@@ -50,6 +50,16 @@ module C
 		Pathname.new(p).expand_path
 	end
 	
+	# Glob pathnames.
+	#
+	# @see Dir.glob
+	#
+	# @param glob [String]
+	# @return [Set<Pathname>]
+	def self.glob(glob)
+		Set.new Dir.glob(glob).map{|e| C.path(e) }
+	end
+	
 	# Create a probably unique path segment.
 	#
 	# Creates a string in the form '$stuff/' that will probably be unique.
