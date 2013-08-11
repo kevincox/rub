@@ -171,16 +171,23 @@ module L::C
 		# @see define
 		attr_accessor :define
 		
-		def initialize
-			@optimize     = Options.optimize
-			@optimize_for = Options.optimize_for
+		def initialize(template = Options)
+			@optimize     = template.optimize
+			@optimize_for = template.optimize_for
 			
-			@debug   = Options.debug
-			@profile = Options.profile
+			@debug   = template.debug
+			@profile = template.profile
 			
-			@include_dirs = Options.include_dirs.dup
-			@libs         = Options.libs.dup
-			@define       = Options.define.dup
+			@include_dirs = template.include_dirs.dup
+			@libs         = template.libs.dup
+			@define       = template.define.dup
+		end
+		
+		def self.dup
+			new
+		end
+		def dup
+			Options.new self
 		end
 	end
 	
@@ -216,7 +223,7 @@ module L::C
 		# @param obj     [Pathname,String] The path of the output file.
 		# @param options [Options] An options object.
 		# @return [Pathname] The output file.
-		def self.compile_command(src, obj, options: Options.new)
+		def self.compile_command(src, obj, options: Options)
 			raise "Not implemented!"
 		end
 		
@@ -340,10 +347,10 @@ EOF
 		compiler = compiler compiler
 	
 		src.map! do |s|
-			out = R::Env.out_dir + 'l/c/objects/' + (C.path(s).to_s[1..-1] + '.o')
+			out = R::Env.out_dir + 'l/c/' + C.unique_segment(options) + "#{s.basename}.o"
 			
-			TargetCSource.new(s, headers, options)
-			::C.generator(s, compiler.compile_command(s, out), out, desc:"Compiling")
+			R.find_target(s) or TargetCSource.new(s, headers, options)
+			::C.generator(s, compiler.compile_command(s, out, options: options), out, desc:"Compiling")
 		end
 		src.flatten!
 		src

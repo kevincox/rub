@@ -72,7 +72,7 @@ module L::C
 			f << options.define.map do |k, v|
 				if v
 					# -Dk if v is true else -Dk=v.
-					"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
+					"-D#{k}#{v.equal?(true)?"":"=#{v}"}"
 				else
 					"-U#{k}"
 				end
@@ -81,7 +81,7 @@ module L::C
 			f.flatten!
 		end
 		
-		def self.compile_command(src, obj, options: Options.new)
+		def self.compile_command(src, obj, options: Options)
 			[find, '-c', *generate_flags(options), "-o#{obj}", *src]
 		end
 		
