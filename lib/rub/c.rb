@@ -23,6 +23,7 @@
 ################################################################################
 
 require 'pathname'
+require 'date'
 require 'digest/sha1'
 
 require 'rub/tool'
