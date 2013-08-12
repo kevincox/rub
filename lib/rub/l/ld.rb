@@ -264,7 +264,7 @@ module L::LD
 		libfs = libs.map {|l| linker.find_lib l or raise "Can't find library #{l}."}
 		
 		out = linker.full_name name, format
-		out = R::Env.out_dir + 'l/ld/' + out
+		out = R::Env.out_dir + 'l/ld/' + C.unique_segment([src, libs, options]) + out
 		
 		C::generator(src+libfs, linker.link_command(src, libs, out, format: format, options: options), out)
 		

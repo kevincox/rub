@@ -233,7 +233,8 @@ module C
 	def self.find_command(cmd)
 		pn = Pathname.new(cmd)
 		if pn.absolute?
-			return pn.executable? ? pn : nil
+			#return pn.executable? ? pn : nil
+			return pn
 		end
 		
 		exe = R.spersistant["C.find_command.#{cmd}"]

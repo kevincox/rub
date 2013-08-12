@@ -49,7 +49,7 @@ module R
 			cmd = cmd.map{|a| a.to_s}
 			exe = C.find_command(cmd[0])
 			if not exe
-				$stderr.puts "Can't find #{cmd[0]}."
+				raise "Can't find #{cmd[0]}."
 				exit 1
 			end
 			cmd[0] = exe
@@ -78,15 +78,8 @@ module R
 		end
 		
 		def build_self
-			if clean?
-				#p "#{self.inspect}: Already clean, not rebuilding."
-				return
-			end
-			
 			R::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories", importance: :low)
 			@cmd.all?{|c| R::run(c, "#@action #{@output.to_a.join", "}")} or exit 1
-			
-			clean
 		end
 	end
 end

@@ -32,7 +32,7 @@ require 'minitest/mock'
 class Minitest::Runnable
 	@@rub_oldinherited = method :inherited
 	def self.inherited klass
-		L::Test.make_test klass
+		::L::Test.make_test klass
 		
 		@@rub_oldinherited.call klass
 	end
@@ -91,6 +91,22 @@ end
 #   end
 #
 module L::Test
+	def self.make_test(klass)
+		@tests ||= {}
+	
+		sklass = klass.to_s
+		if sklass =~ /^Test/ 
+			name = sklass
+			         .gsub(/(?<=[a-z0-9])([A-Z])/, '-\1')
+			         .gsub(/(?<=[^0-9])([0-9])/, '-\1')
+			         .gsub('_', '-')
+			         .downcase.to_sym
+			#pp name
+			
+			@tests[name] ||= TargetTestCase.new(klass, name)
+		end
+	end
+	
 	class Reporter < Minitest::AbstractReporter
 		def initialize(opt = {})
 			@passed = true
@@ -222,19 +238,19 @@ module L::Test
 		end
 	end
 	
-	def self.make_test(klass)
-		@tests ||= {}
-	
-		sklass = klass.to_s
-		if sklass =~ /^Test/ 
-			name = sklass
-			         .gsub(/(?<=[a-z0-9])([A-Z])/, '-\1')
-			         .gsub(/(?<=[^0-9])([0-9])/, '-\1')
-			         .gsub('_', '-')
-			         .downcase.to_sym
-			#pp name
+	class TargetTestExecutable < R::TargetGenerator
+		def build
+			build_dependancies
 			
-			@tests[name] ||= TargetTestCase.new(klass, name)
+			R::run(@cmd[0], "#@action #{@output.to_a.join", "}") or exit 1
 		end
+	end
+	
+	def self.external(cmd, name)
+		t = TargetTestExecutable.new
+		t.add_cmd cmd
+		t.output << name
+		
+		t.register
 	end
 end

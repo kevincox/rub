@@ -195,7 +195,7 @@ module R
 		#
 		# @return [true,false] True if this target is up-to-date.
 		def clean?
-			output.all?{|f| f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash_contents
+			output.all?{|f| !f.is_a?(Symbol) and f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash_contents
 		end
 		
 		def build
