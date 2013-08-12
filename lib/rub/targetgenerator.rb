@@ -69,11 +69,9 @@ module R
 			cmds.map{|c| add_cmd c}
 		end
 		
-		def hash_contents
+		def hash_input
 			super + Digest::SHA1.digest(
-				@cmd.map do |c| 
-					c.map{|a| Digest::SHA1.digest(a.to_s) }
-				end.join
+				@cmd.join("\0")
 			)
 		end
 		

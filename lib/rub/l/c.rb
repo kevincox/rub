@@ -446,6 +446,14 @@ EOF
 			output << @h << @c
 		end
 		
+		def hash_input
+			Digest::SHA1.digest(@val.inspect)
+		end
+		
+		def hash_output(t)
+			Digest::SHA1.digest(t.readlines.drop(2).join('\n'))
+		end
+		
 		def build_self
 			@h.dirname.mkpath
 			@c.dirname.mkpath

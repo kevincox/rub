@@ -60,6 +60,13 @@ module C
 		Set.new Dir.glob(glob).map{|e| C.path(e) }
 	end
 	
+	# Get a consistant hash of an object.
+	def self.chash(o)
+		# Super hacky, strip out object-ids, because they change every
+		# invocation, but use inspect.  It works alright.
+		o.inspect.gsub(/(?<!:):0x[0-9a-f]*/, '')
+	end
+	
 	# Create a probably unique path segment.
 	#
 	# Creates a string in the form '$stuff/' that will probably be unique.
@@ -68,7 +75,9 @@ module C
 	#                      same across invocations allows predictable names,
 	#                      preventing unnecessary rebuilds.
 	def self.unique_segment(seed=nil)
-		Digest::SHA1.hexdigest(( seed != nil ? seed.inspect : caller_locations(1,1) ).to_s)
+		seed ||= caller_locations(1,1)
+		
+		return Digest::SHA1.hexdigest(chash(seed))
 	end
 	
 	# Return a probably unique file name.
@@ -111,14 +120,6 @@ module C
 			f.map!{|e| C.path(e)}
 			
 			input.merge(f)
-		end
-		
-		def hash_contents
-			Digest::SHA1.digest(
-				(
-					input.map{|i| R::get_target(i).hash_contents }
-				).join
-			)
 		end
 		
 		def build

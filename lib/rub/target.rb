@@ -131,14 +131,30 @@ module R
 		# - Build commands.
 		#
 		# @return [String] the hash.
-		def hash_contents
+		def hash_input
 			Digest::SHA1.digest(
 				(
-					output.map{|f| Digest::SHA1.file(f).to_s      } +
-					['-'] +
-					input .map{|i| R::get_target(i).hash_contents }
+					input.map{|i| R::get_target(i).hash_output(i) }
 				).join
 			)
+		end
+		
+		@@symbolcounter = rand(2**160) # Shouldn't repeat very often.
+		def hash_output(t)
+			if t.is_a? Symbol
+				@@symbolcounter++
+				"symbol-#{@@symbolcounter.to_s(16)}" # Never clean.
+			else
+				Digest::SHA1.file(t).to_s
+			end
+		end
+		
+		def hash_outputs(t = output)
+			Digest::SHA1.digest(t.map{|o| hash_output(o)}.join)
+		end
+		
+		def hash_self
+			Digest::SHA1.digest(hash_input+hash_outputs)
 		end
 		
 		# Build the inputs.
@@ -186,16 +202,21 @@ module R
 		#
 		# @return [void]
 		def clean
-			output.all?{|f| f.exist?} or return
+			output.all?{|f| !f.is_a?(Symbol) and f.exist?} or return
 			
-			 R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] = hash_contents
+			 R::ppersistant["Rub.TargetSmart.#{@output.sort.join('\0')}"] = hash_self
 		end
 		
 		# Is this target clean?
 		#
 		# @return [true,false] True if this target is up-to-date.
 		def clean?
-			output.all?{|f| !f.is_a?(Symbol) and f.exist?} and R::ppersistant["Rub.Target.#{@output.sort.join('\0')}"] == hash_contents
+			output.each do |f|
+				f.is_a?(Symbol) and return false # Tags are never clean.
+				f.exist?        or  return false # Output missing, rebuild.
+			end
+			
+			R::ppersistant["Rub.TargetSmart.#{@output.sort.join('\0')}"] == hash_self
 		end
 		
 		def build
@@ -218,8 +239,8 @@ module R
 			@output = Set[p]
 		end
 		
-		def hash_contents
-			@hashcache ||= Digest::SHA1.file(@src).to_s
+		def hash_output(f)
+			@hashcache ||= Digest::SHA1.file(f).to_s
 		end
 		
 		def build
