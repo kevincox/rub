@@ -34,9 +34,17 @@ module L::C
 	cattr_reader   :compilers
 	
 	@compilers = {}
-	@prefered_compiler = nil
 
 	class Options
+		
+		# Compiler
+		#
+		# The compiler to use.
+		#
+		# @return (see compiler)
+		# @see compiler
+		cattr_accessor :compiler
+		
 		# @!scope class
 		# Default optimization level.
 		#
@@ -116,6 +124,14 @@ module L::C
 			@debug ? 'DEBUG' : 'NDEBUG' => true,
 		}
 		
+		# Compiler
+		#
+		# The compiler to use.
+		#
+		# @return (see compiler)
+		# @see compiler
+		attr_accessor :compiler
+		
 		# Optimization level
 		#
 		# Override the global optimization level.
@@ -172,6 +188,7 @@ module L::C
 		attr_accessor :define
 		
 		def initialize(template = Options)
+			@compiler     = template.compiler
 			@optimize     = template.optimize
 			@optimize_for = template.optimize_for
 			
@@ -285,6 +302,24 @@ module L::C
 #endif
 EOF
 		end
+		
+		def self.include_directories(options)
+			@include_directories and return @include_directories.dup
+			
+			cmd = [C.find_command('cpp'), '-v', '-o', File::NULL, File::NULL]
+			c = R::Command.new cmd
+			c.run
+			
+			l = c.stderr.lines.map &:chomp
+			
+			#qb = l.find_index('#include "..." search starts here:') + 1
+			sb = l.find_index('#include <...> search starts here:') + 1
+			se = l.find_index 'End of search list.'
+			
+			@include_directories = l[sb...se].map{|d| Pathname.new d[1..-1] }
+			
+			@include_directories.dup
+		end
 	end
 	
 	R::Tool.load_dir(Pathname.new(__FILE__).realpath.dirname+"c/compiler/")
@@ -307,7 +342,7 @@ EOF
 	
 	D[:l_c_compiler].map! {|c| c.to_sym}
 	
-	@prefered_compiler = D[:l_c_compiler].find {|c| @compilers.has_key? c}
+	Options.compiler = @compilers[ D[:l_c_compiler].find {|c| @compilers.has_key? c} ]
 	
 	# Return a compiler object.
 	#
@@ -331,7 +366,7 @@ EOF
 		#                The source files to compile and generated headers.
 		# @param options [Options] An options object.
 		# @return [Set<Pathname>] The resulting object files.
-	def self.compile(src, compiler: nil, options: Options)
+	def self.compile(src, options: Options)
 		src = R::Tool.make_set_paths src
 		
 		headers = Set.new
@@ -343,14 +378,12 @@ EOF
 				true
 			end
 		end
-		
-		compiler = compiler compiler
 	
 		src.map! do |s|
 			out = R::Env.out_dir + 'l/c/' + C.unique_segment(options) + "#{s.basename}.o"
 			
 			R.find_target(s) or TargetCSource.new(s, headers, options)
-			::C.generator(s, compiler.compile_command(s, out, options: options), out, desc:"Compiling")
+			::C.generator(s, options.compiler.compile_command(s, out, options: options), out, desc:"Compiling")
 		end
 		src.flatten!
 		src
@@ -366,7 +399,7 @@ EOF
 		#	@@inited = true
 		#end
 	
-		def initialize(f, input = [], options = Options.new)
+		def initialize(f, input = [], options = Options)
 			#TargetC.initialize
 			
 			@f = C.path(f)
@@ -376,46 +409,46 @@ EOF
 			register
 		end
 		
-		def incs_from_cpp
-			c = R::Command.new [
-				::C.find_command('cpp'),
-				#'-H',
-				*@opt.include_dirs.map{|i| "-I#{i}"},
-				@f
-			]
-			c.run
-			
-			#pp 'ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR'
-			#puts c.stderr
-			
-			d = c.stdout.lines.map do |l|
-				l.match(/^# [0-9]+ "(.|[^<].*[^>])"/) do |md|
-					C.path(md[1])
+		def included_files(set=Set.new, options=Options)
+			set.include?(@f) and return
+		
+			set << @f
+			@incs ||= @f.readlines.map do |l|
+				l =~ /\s*#\s*include\s*("(.*)"|<(.*)>)/ or next
+				
+				p  = Pathname.new( $2 || $3 )
+				ip = @opt.compiler.include_directories(@opt)
+				
+				if $2
+					ip << @f.dirname
 				end
-			end.select do |l|
-				l
-			end.uniq
+				
+				h = nil
+				ip.each do |d|
+					hg = d.join(p)
+					
+					if hg.exist?
+						h = hg
+						break
+					end
+				end
+				
+				h # Ignoring missing headers for now.
+			end.compact
 			
-			d.delete @f
-			
-			d
+			@incs.each do |h|
+				icd = R::find_target(h) || TargetCSource.new(h, @input, @opt)
+				
+				if icd.respond_to? :included_files
+					icd.included_files set, options
+				else
+					set << h
+				end
+			end
 		end
 		
 		def input
-			@incs and return @incs
-			
-			@input.map do |f|
-				C.path(f)
-			end.map do |f|
-				[f, R.get_target(f)]
-			end.each do |f, i| 
-				i.build
-			end
-			
-			#puts "#@f depends on:"
-			#pp incs_from_cpp
-			
-			@incs = incs_from_cpp
+			included_files
 		end
 		
 		def output
@@ -423,6 +456,9 @@ EOF
 		end
 		
 		def build
+			@depsbuilt and return
+		
+			@depsbuilt = true
 			build_dependancies
 		end
 	end
@@ -527,14 +563,13 @@ EOS
 	# @param options  [Options] An options object for the compiler.
 	# @param loptions [L::LD::Options] An options object for the linker.
 	# @return [Pathname] The resulting executable.
-	def self.program(src, name, 
-	                 compiler: @prefered_compiler,
+	def self.program(src, name,
 	                 options: Options,
 	                 loptions: L::LD::Options
 	                )
 		compiler = compiler compiler
 		
-		obj = compile(src, compiler: compiler, options: options)
-		L::LD.link(obj, options.libs, name, format: :exe, linker: compiler.linker, options: loptions)
+		obj = compile(src, options: options)
+		L::LD.link(obj, options.libs, name, format: :exe, linker: options.compiler.linker, options: loptions)
 	end
 end
