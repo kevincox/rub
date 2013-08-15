@@ -451,7 +451,7 @@ EOF
 		end
 		
 		def input
-			included_files
+			@input + included_files
 		end
 		
 		def output
