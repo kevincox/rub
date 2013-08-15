@@ -415,6 +415,9 @@ EOF
 			set << @f
 			@incs ||= @f.readlines.map do |l|
 				l =~ /\s*#\s*include\s*("(.*)"|<(.*)>)/ or next
+				if $3 and !D[:l_c_system_headers]
+					next
+				end
 				
 				p  = Pathname.new( $2 || $3 )
 				ip = @opt.compiler.include_directories(@opt)
