@@ -22,8 +22,8 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/target'
-require 'rub/system'
+require_relative 'target'
+require_relative 'system'
 
 module R
 	# A target that executes a command.

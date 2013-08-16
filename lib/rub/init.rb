@@ -27,22 +27,24 @@
 require 'pathname'
 require 'pp'
 
-$LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
+#$LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
 
-require 'rub/modules'
-require 'rub/version'
-require 'rub/tool'
+require_relative 'modules'
+require_relative 'version'
+require_relative 'tool'
 
-require 'rub/environment'
-require 'rub/commandline'
-require 'rub/dirs'
-require 'rub/persist'
-require 'rub/runner'
+require_relative 'define'
+require_relative 'environment'
+require_relative 'commandline'
+require_relative 'dirs'
+require_relative 'persist'
+require_relative 'runner'
 
-require 'rub/target'
+require_relative 'target'
+require_relative 'targetgenerator'
 
-require 'rub/c'
-require 'rub/help'
+require_relative 'c'
+require_relative 'help'
 
 ##### Add the first two scripts.
 R::Runner.do_file(R::Env.src_dir+"root.rub")

@@ -26,9 +26,6 @@ require 'pathname'
 require 'date'
 require 'digest/sha1'
 
-require 'rub/tool'
-require 'rub/targetgenerator'
-
 module C
 	# Expand a path.
 	#

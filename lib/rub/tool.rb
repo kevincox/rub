@@ -25,8 +25,6 @@
 require 'set'
 require 'pathname'
 
-require 'rub/modules'
-
 class Module
 	# Class attribute reader.
 	#

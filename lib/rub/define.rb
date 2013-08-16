@@ -22,8 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/environment'
-
+# Definitions Namespace.
 module D
 	@@map = {}
 	

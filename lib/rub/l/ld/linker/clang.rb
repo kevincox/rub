@@ -22,8 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/ld'
-
+#
 module L::LD
 	LinkerClang = Linker.clone
 	module LinkerClang

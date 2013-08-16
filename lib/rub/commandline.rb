@@ -1,8 +1,3 @@
-require 'getoptlong'
-require 'sysexits'
-
-require 'rub/define'
-
 # Copyright 2013 Kevin Cox
 
 ################################################################################
@@ -27,7 +22,8 @@ require 'rub/define'
 #                                                                              #
 ################################################################################
 
-require 'rub'
+require 'getoptlong'
+require 'sysexits'
 
 # Command line parsing and handling.
 module R::CommandLine

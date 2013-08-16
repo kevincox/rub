@@ -22,8 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/c'
-
 module L::C
 	CompilerGCC = Compiler.clone
 	module CompilerGCC

@@ -22,8 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/ld'
-
 module L::LD
 	LinkerLD = Linker.clone
 	module LinkerLD

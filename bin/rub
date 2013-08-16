@@ -26,15 +26,6 @@
 
 require 'pathname'
 
-[
-	Pathname.new(__FILE__).dirname.parent.join('lib', 'rub.rb').expand_path,
-	Pathname.new('~/.local/lib/rub/rub.rb').expand_path,
-	'/usr/local/lib/rub.rb',
-	'/usr/lib/rub.rb',
-].each do |p|
-	p = Pathname.new(p)
-	p.exist? or next
-	
-	require p.to_s
-	break
-end
+path    = Pathname.new(__FILE__).realpath # No symlink.
+
+require path.dirname.parent.join('lib', path.basename, 'init.rb').to_s

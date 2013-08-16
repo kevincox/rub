@@ -22,8 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/c'
-
 module L::C
 	CompilerClang = Compiler.clone
 	module CompilerClang

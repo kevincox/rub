@@ -22,7 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/environment'
+require_relative 'environment'
 
 [
 	R::Env.src_dir,

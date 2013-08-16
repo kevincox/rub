@@ -22,8 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'rub'
-
+# Internal
 module R
 	
 	# @!attribute [r] self.ppersistant

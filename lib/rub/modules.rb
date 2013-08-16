@@ -43,9 +43,9 @@ module L
 	# Auto-load libraries.
 	def self.const_missing(n)
 		#pp n
-		p = "rub/l/#{n.to_s.downcase}"
+		p = "l/#{n.to_s.downcase}"
 		
-		require p
+		require_relative p
 		const_defined?(n, false) or raise "Library #{p} malformed, was expected to load into L::#{n}."
 		const_get(n, false)
 	end

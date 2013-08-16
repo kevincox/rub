@@ -22,8 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/l/ld'
-
 module L::LD
 	LinkerGCC = Linker.clone
 	module LinkerGCC

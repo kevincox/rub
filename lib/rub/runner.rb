@@ -24,8 +24,6 @@
 
 require 'sysexits'
 
-require 'rub/environment'
-
 # Functions for running build scripts.
 module R::Runner
 	@@loaded = {}

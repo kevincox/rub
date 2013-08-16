@@ -22,8 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'rub'
-
+# Internal Module
 module R
 
 	# A high level interface for executing commands.

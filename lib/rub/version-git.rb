@@ -22,7 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/modules'
+require_relative 'modules'
 
 module R::Version
 	@@cdto = "cd '#{Pathname.new(__FILE__).realpath.dirname}'"

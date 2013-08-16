@@ -22,7 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'rub/modules'
+require_relative 'modules'
 
 # Version info.
 module R::Version

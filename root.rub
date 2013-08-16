@@ -23,6 +23,6 @@
 ################################################################################
 
 module Rub
-	Slug = R::Version.slug
+	Slug = R::Version.slug + R::Version.version_major
 	Name = R::Version.name
 end

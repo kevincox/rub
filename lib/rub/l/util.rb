@@ -66,8 +66,40 @@ module L::Util
 			TargetUninstall.instance.add f
 		end
 	end
-
-	# Install a file.
+	
+	def self.link(target, name, type = :sym, expand_target: true)
+		target = expand_target ? C.path(target) : target
+		name   = C.path name
+		
+		C.generator(
+			[], #target,
+			['ln', '-f', (type == :sym ? '-s' : nil), target, name].compact,
+			name,
+			desc: 'Linking'
+		)
+	end
+	
+	def self.install_to(from, to, mode: nil, require: [])
+		from = C.path(from)
+		to   = Pathname.new(to).expand_path(D :prefix)
+		
+		if from.directory?
+			return install(from.children, to)
+		end
+		
+		C.generator(
+			Set[from].merge(require),
+			['install', "-D#{mode!=nil ? "m#{mode}" : "" }", from, to],
+			to,
+			desc: 'Installing'
+		).each do |o|
+			C.tag(:all    ).require(from)
+			C.tag(:install).require(to)
+		end
+		uninstall to
+	end
+	
+	# Install a file
 	#
 	# Installs +what+ into the directory +where+.  Source files are added to
 	# the +=all+ tag and installed files are added to the +=install+ tag.
@@ -89,29 +121,14 @@ module L::Util
 	#
 	def self.install(what, where, mode: nil, require: [])
 		what = R::Tool.make_set_paths what
-		where = Pathname.new(where).expand_path(D :prefix)
+		where = Pathname.new(where)
 		require = R::Tool.make_set_paths require
-		
-		at = C.tag :all
-		it = C.tag :install
 		
 		what.map do |f|
 			if f.directory?
 				install(f.children, where+f.basename)
 			else
-				out = where+f.basename
-				C.generator(
-					Set[f].merge(require),
-					['install', "-D#{mode!=nil ? "m#{mode}" : "" }", f, out],
-					out,
-					desc: "Installing"
-				).each do |o|
-					at.require(f)
-					it.require(o)
-				end
-				uninstall out
-				
-				out
+				install_to(f, where+f.basename)
 			end
 		end.flatten.to_set
 	end
