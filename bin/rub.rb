@@ -26,6 +26,6 @@
 
 require 'pathname'
 
-path    = Pathname.new(__FILE__).realpath # No symlink.
+path = Pathname.new(__FILE__).realpath # No symlink.
 
 require path.dirname.parent.join('lib', path.basename('.rb'), 'init.rb').to_s

@@ -23,7 +23,6 @@
 ################################################################################
 
 require 'getoptlong'
-require 'sysexits'
 
 # Command line parsing and handling.
 module R::CommandLine

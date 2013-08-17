@@ -28,6 +28,7 @@
 require 'pathname'
 require 'set'
 require 'pp'
+require 'sysexits'
 require 'digest/sha1'
 
 ##### Load the namespaces.

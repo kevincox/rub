@@ -22,8 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require 'sysexits'
-
 # Functions for running build scripts.
 module R::Runner
 	@@loaded = {}
