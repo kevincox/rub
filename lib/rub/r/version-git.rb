@@ -29,7 +29,7 @@ module R::Version
 	
 	# The latest version tag.
 	def self.tag
-		@@tagcache ||= `#{@@cdto}; git tag -l 'v[0-9]*.*.*'`.chomp
+		@@tagcache ||= `#{@@cdto}; git describe --match 'v[0-9]*.*.*' --abbrev=0`.chomp
 	end
 	
 	# The number of commits from the latest version tag.

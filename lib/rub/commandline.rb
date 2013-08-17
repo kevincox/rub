@@ -31,14 +31,14 @@ module R::CommandLine
 				puts <<ENDHELP
 #{R::Version.info_string}
 
-Usage: #{$0} [options] [targets]
+Usage: #{$0} [options] [target...]
 
 Targets:
 Specify the targets to build.  If none are specified '=all' is assumed.
 
 Options:
 -o --out <dir>
-  Sets the Rub build directory.  This defaults to 'build/'.  This is
+  Sets the Rub build directory.  This defaults to 'build:'.  This is
   merely a scratch location and none of the files in this directory should
   be used outside of Rub.  You may want to put this on fast storage (maybe
   in RAM) to speed up complex builds.
