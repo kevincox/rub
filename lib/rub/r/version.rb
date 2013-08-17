@@ -22,8 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require_relative 'modules'
-
 # Version info.
 module R::Version
 	# Pretty Program Name.

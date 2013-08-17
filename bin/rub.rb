@@ -1,3 +1,5 @@
+#! /usr/bin/env ruby
+
 # Copyright 2013 Kevin Cox
 
 ################################################################################
@@ -22,43 +24,8 @@
 #                                                                              #
 ################################################################################
 
-require_relative 'modules'
+require 'pathname'
 
-module R::Version
-	@@cdto = "cd '#{Pathname.new(__FILE__).realpath.dirname}'"
-	@@regex = /^v([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9]+))?(-g([0-9a-f]+))?(-(dirty))?$/
-	
-	# The latest version tag.
-	def self.tag
-		@@tagcache ||= `#{@@cdto}; git tag -l 'v[0-9]*.*.*'`.chomp
-	end
-	
-	# The number of commits from the latest version tag.
-	def self.dist_from_tag
-		`#{@@cdto}; git rev-list HEAD ^#{tag} --count`.to_i
-	end
+path    = Pathname.new(__FILE__).realpath # No symlink.
 
-	# Major version number.
-	def self.version_major
-		tag.sub @@regex, '\1'
-	end
-	# Minor version number.
-	def self.version_minor
-		tag.sub @@regex, '\2'
-	end
-	# Patch number.
-	def self.version_patch
-		tag.sub @@regex, '\3'
-	end
-	
-	# Return the latest commit that is running.
-	def self.commit
-		`#{@@cdto}; git rev-parse HEAD`.chomp
-	end
-	
-	# If anything has changed since the last commit.
-	def self.dirty?
-		`#{@@cdto}; git diff --exit-code`
-		$? != 0
-	end
-end
+require path.dirname.parent.join('lib', path.basename('.rb'), 'init.rb').to_s

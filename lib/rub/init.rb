@@ -24,34 +24,32 @@
 #                                                                              #
 ################################################################################
 
+##### These libraries are guaranteed to be loaded.
 require 'pathname'
+require 'set'
 require 'pp'
+require 'digest/sha1'
 
-#$LOAD_PATH.push(Pathname.new(__FILE__).realpath.dirname.to_s)
+##### Load the namespaces.
+require_relative 'd'
+require_relative 'r'
+require_relative 'l'
+require_relative 'c'
 
-require_relative 'modules'
-require_relative 'version'
-require_relative 'tool'
-
-require_relative 'define'
-require_relative 'environment'
+##### Parse the command line.
 require_relative 'commandline'
 require_relative 'dirs'
 require_relative 'persist'
-require_relative 'runner'
-
-require_relative 'target'
-require_relative 'targetgenerator'
-
-require_relative 'c'
 require_relative 'help'
 
 ##### Add the first two scripts.
 R::Runner.do_file(R::Env.src_dir+"root.rub")
 R::Runner.do_file(R::Env.cmd_dir+"dir.rub")
 
+##### Add default target if necessary.
 ARGV.empty? and ARGV << ':all'
 
+##### Build requested targets.
 ARGV.each do |t|
 	t = if t =~ /^:[^\/]*$/ # Is a tag.
 		t[1..-1].to_sym

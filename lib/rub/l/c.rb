@@ -24,8 +24,6 @@
 
 require 'tempfile'
 
-require 'rub/l/ld'
-
 # C Library
 module L::C
 	# @!scope class
@@ -35,8 +33,8 @@ module L::C
 	
 	@compilers = {}
 
+	# Compiler options.
 	class Options
-		
 		# Compiler
 		#
 		# The compiler to use.

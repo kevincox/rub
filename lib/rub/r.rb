@@ -22,4 +22,18 @@
 #                                                                              #
 ################################################################################
 
+# Rub internals.
+#
+# Internal functions intended for library developers only.
+module R
 
+end
+
+require_relative 'r/tool'
+require_relative 'r/version'
+require_relative 'r/env'
+require_relative 'r/runner'
+require_relative 'r/command'
+
+require_relative 'r/target'
+require_relative 'r/targetgenerator'

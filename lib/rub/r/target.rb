@@ -22,10 +22,6 @@
 #                                                                              #
 ################################################################################
 
-require 'digest/sha1'
-require 'pathname'
-require 'set'
-
 module R
 	# All targets.
 	#

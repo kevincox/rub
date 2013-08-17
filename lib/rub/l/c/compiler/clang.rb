@@ -47,8 +47,8 @@ module L::C
 		@@o_flags = {
 			:none=>'-O0',
 			:some=>'-O1',
-			:full=>'-O2',
-			:max =>'-O3',
+			:full=>'-O3',
+			:max =>'-O4',
 		}
 		@@of_flags = {
 			nil=>[],

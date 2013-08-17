@@ -22,7 +22,6 @@
 #                                                                              #
 ################################################################################
 
-#
 module L::LD
 	LinkerClang = Linker.clone
 	module LinkerClang

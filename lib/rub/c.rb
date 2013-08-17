@@ -22,10 +22,9 @@
 #                                                                              #
 ################################################################################
 
-require 'pathname'
 require 'date'
-require 'digest/sha1'
 
+# Core Module
 module C
 	# Expand a path.
 	#

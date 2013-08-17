@@ -22,16 +22,17 @@
 #                                                                              #
 ################################################################################
 
-L::Util.install_to 'bin/rub',    "bin/#{Rub::Slug}", mode: 755
+L::Util.install_to 'bin/rub.rb', "bin/#{Rub::Slug}", mode: 755
 L::Util.install_to 'lib/rub',    "lib/#{Rub::Slug}/"
 
 if !D[:not_default]
 	l = L::Util.link Rub::Slug, "#{D:prefix}/bin/rub", expand_target: false
 	C.tag(:install).require l
+	
 	L::Util.uninstall l
 end
 
-vg = L::Template.generate_file 'lib/rub/version-generated.rb.erb', 'version-generated.rb'
-L::Util.install vg, "lib/#{Rub::Slug}/"
+vg = L::Template.generate_file 'lib/rub/r/version-generated.rb.erb', 'version-generated.rb'
+L::Util.install vg, "lib/#{Rub::Slug}/r/"
 
 L::Util.install 'LICENCE', "share/licences/#{Rub::Slug}/"

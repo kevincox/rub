@@ -22,62 +22,42 @@
 #                                                                              #
 ################################################################################
 
-require_relative 'target'
-require_relative 'system'
 
-module R
-	# A target that executes a command.
-	#
-	# This is a target that executes a command.  It can be used directly but
-	# it is easier and prettier to use {C.generator}
-	class TargetGenerator < TargetSmart
-		attr_accessor :action
+module R::Version
+	@@cdto = "cd '#{Pathname.new(__FILE__).realpath.dirname}'"
+	@@regex = /^v([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9]+))?(-g([0-9a-f]+))?(-(dirty))?$/
 	
-		def initialize
-			super
-			
-			@action = 'Building'
-			
-			@cmd = []
-		end
-		
-		# Add a command to be executed.
-		#
-		# @param cmd [Array<String,#to_s]
-		# @return [Array<String>] The command.
-		def add_cmd(cmd)
-			cmd = cmd.map{|a| a.to_s}
-			exe = C.find_command(cmd[0])
-			if not exe
-				raise "Can't find #{cmd[0]}."
-				exit 1
-			end
-			cmd[0] = exe
-			@input << cmd[0]
-			@cmd << cmd
-			
-			cmd
-		end
-		
-		# Add multiple commands.
-		#
-		# @see add_cmd
-		#
-		# @param cmds [Array<Array<String,#to_s>>] The commands.
-		# @return [Array<Array<String>>] The commands.
-		def add_cmds(cmds)
-			cmds.map{|c| add_cmd c}
-		end
-		
-		def hash_input
-			super + Digest::SHA1.digest(
-				@cmd.join("\0")
-			)
-		end
-		
-		def build_self
-			R::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories", importance: :low)
-			@cmd.all?{|c| R::run(c, "#@action #{@output.to_a.join", "}")} or exit 1
-		end
+	# The latest version tag.
+	def self.tag
+		@@tagcache ||= `#{@@cdto}; git tag -l 'v[0-9]*.*.*'`.chomp
+	end
+	
+	# The number of commits from the latest version tag.
+	def self.dist_from_tag
+		`#{@@cdto}; git rev-list HEAD ^#{tag} --count`.to_i
+	end
+
+	# Major version number.
+	def self.version_major
+		tag.sub @@regex, '\1'
+	end
+	# Minor version number.
+	def self.version_minor
+		tag.sub @@regex, '\2'
+	end
+	# Patch number.
+	def self.version_patch
+		tag.sub @@regex, '\3'
+	end
+	
+	# Return the latest commit that is running.
+	def self.commit
+		`#{@@cdto}; git rev-parse HEAD`.chomp
+	end
+	
+	# If anything has changed since the last commit.
+	def self.dirty?
+		`#{@@cdto}; git diff --exit-code`
+		$? != 0
 	end
 end
