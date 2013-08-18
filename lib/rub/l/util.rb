@@ -67,6 +67,15 @@ module L::Util
 		end
 	end
 	
+	# Create a link
+	#
+	# @param target   [Pathname,String] The file the link points to.
+	# @param name     [Pathname,String] The location of the link.
+	# @param type          [:sym,:hard] The type of link to create.
+	# @param expand_target [true,false] Whether or not to make target an
+	#                                   absolute path.  This allows the creation
+	#                                   of relative links.
+	# @return [Pathname] The path of the link.
 	def self.link(target, name, type = :sym, expand_target: true)
 		target = expand_target ? C.path(target) : target
 		name   = C.path name
@@ -77,8 +86,26 @@ module L::Util
 			name,
 			desc: 'Linking'
 		)
+		name
 	end
 	
+	# Install a file to a specific location.
+	# 
+	# @see #install
+	#
+	# Similar to {#install} but the basename is not used as the name in the new
+	# location.  If from is a dirtectory it is installed and renamed but it's
+	# contents are preserved with the same names.
+	#
+	# @param from [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#             The files to install.
+	# @param to [Pathname,String] Where to install them.  If not
+	#                                absolute it is relative to +D:prefix+
+	# @param mode [Numeric] The permissions (specified in base ten) for the
+	#                       file.  If nil the current permissions are kept.
+	# @param require [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#                Files that must be present before installing the file.  
+	# @return [Array<Pathname>] The installed files.
 	def self.install_to(from, to, mode: nil, require: [])
 		from = C.path(from)
 		to   = Pathname.new(to).expand_path(D :prefix)
@@ -97,6 +124,8 @@ module L::Util
 			C.tag(:install).require(to)
 		end
 		uninstall to
+		
+		Set[from]
 	end
 	
 	# Install a file
@@ -112,12 +141,11 @@ module L::Util
 	#                       file.  If nil the current permissions are kept.
 	# @param require [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 	#                Files that must be present before installing the file.  
-	#
 	# @return [Array<Pathname>] The installed files.
 	# 
 	# @example
 	#   exe = L::C.program(srcs, ['pthread'], 'bitmonitor-test')
-	#   L::Util.install exe, 'bin/'
+	#   L::Util.install exe, 'bin/', mode: 755
 	#
 	def self.install(what, where, mode: nil, require: [])
 		what = R::Tool.make_set_paths what
