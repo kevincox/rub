@@ -33,7 +33,7 @@ module R::CommandLine
 Usage: #{$0} [options] [target...]
 
 Targets:
-Specify the targets to build.  If none are specified '=all' is assumed.
+Specify the targets to build.  If none are specified ':all' is assumed.
 
 Options:
 -o --out <dir>
