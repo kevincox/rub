@@ -27,7 +27,7 @@ require 'getoptlong'
 # Command line parsing and handling.
 module R::CommandLine
 	help = lambda do
-				puts <<ENDHELP
+				puts <<"EOS"
 #{R::Version.info_string}
 
 Usage: #{$0} [options] [target...]
@@ -86,7 +86,7 @@ Options:
   Print the version, and if not a release commit, the current commit.
 -h, --help
   Print this help text and exit.
-ENDHELP
+EOS
 		exit
 	end
 	
@@ -113,10 +113,9 @@ ENDHELP
 	)
 	
 	scripts = [];
-	sysscripts = [
-		[:file, Pathname.new("/etc/rub/config.rub")],
-		[:file, Pathname.new(Dir.home())+".config/rub/config.rub"],
-	].keep_if { |t, n| n.exist? }
+	sysscripts = XDG[:config].paths.map do |d|
+		[:file, d+'rub/config.rub']
+	end.keep_if { |t, n| n.exist? }
 	
 	opts.each do |opt, arg|
 		case opt

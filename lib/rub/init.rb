@@ -28,8 +28,10 @@
 require 'pathname'
 require 'set'
 require 'pp'
-require 'sysexits'
 require 'digest/sha1'
+
+require 'sysexits'
+require 'xdg'
 
 ##### Load the namespaces.
 require_relative 'd'

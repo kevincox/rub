@@ -62,7 +62,7 @@ module R::Env
 		@out_dir ||= @src_dir + 'build/'
 	end
 	
-	@global_cache = Pathname(Dir.home())+".cache/rub/cache/"
+	@global_cache = XDG[:cache_home].to_path + 'rub/'
 	
 	# @return [Pathname] The project cache directory.
 	def self.project_cache
