@@ -22,6 +22,15 @@
 #                                                                              #
 ################################################################################
 
+##### Make sure we are self-building, not some other version of Rub.
+(
+$LOADED_FEATURES
+	.include?(
+		# Can't use init.rb because it has not finished executing.
+		C.path(__FILE__).dirname.join('lib', 'rub', 'd.rb').to_s
+	) or raise "You must build rub with the version you are building!"
+)
+
 module Rub
 	Slug = R::Version.slug + R::Version.version_major
 	Name = R::Version.name
