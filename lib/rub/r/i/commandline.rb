@@ -25,7 +25,7 @@
 require 'getoptlong'
 
 # Command line parsing and handling.
-module R::CommandLine
+module R::I::CommandLine
 	help = lambda do
 				puts <<"EOS"
 #{R::Version.info_string}
@@ -134,7 +134,7 @@ EOS
 			when '--no-cache'
 				@cache = false
 			when '--doc'
-				lib    = Pathname.new(__FILE__).realpath.parent.parent
+				lib    = Pathname.new(__FILE__).realpath.parent.parent.parent.parent
 				base   = lib.parent
 				
 				source = lib+'**/*.rb'

@@ -39,15 +39,13 @@ require_relative 'r'
 require_relative 'l'
 require_relative 'c'
 
-##### Parse the command line.
-require_relative 'commandline'
+# Odd jobs.
 require_relative 'dirs'
-require_relative 'persist'
 require_relative 'help'
 
 ##### Add the first two scripts.
-R::Runner.do_file(R::Env.src_dir+"root.rub")
-R::Runner.do_file(R::Env.cmd_dir+"dir.rub")
+R::I::Runner.do_file(R::Env.src_dir+"root.rub")
+R::I::Runner.do_file(R::Env.cmd_dir+"dir.rub")
 
 ##### Add default target if necessary.
 ARGV.empty? and ARGV << ':all'

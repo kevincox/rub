@@ -59,13 +59,13 @@ module R::Env
 	
 	# @return [Pathname] The build output directory.
 	def self.out_dir
-		@out_dir ||= @src_dir + 'build/'
+		@out_dir ||= src_dir + 'build/'
 	end
 	
 	@global_cache = XDG[:cache_home].to_path + 'rub/'
 	
 	# @return [Pathname] The project cache directory.
 	def self.project_cache
-		@out_dir + "cache/"
+		out_dir + "cache/"
 	end
 end

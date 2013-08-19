@@ -22,51 +22,57 @@
 #                                                                              #
 ################################################################################
 
-module R
+# Functions for running build scripts.
+module R::I::Runner
+	@@loaded = {}
+
+	# Execute a file.
+	#
+	# Runs a script if it hasn't been run already.
+	#
+	# @param f [Pathname] The file to run.
+	# @return [void]
+	def self.do_file(f)
+		if @@loaded[f]
+			return
+		end
 	
-	# @!attribute [r] self.ppersistant
-	#   @return [Hash] The project cache.
-	cattr_reader :ppersistant
-	
-	# @!attribute [r] self.spersistant
-	#   @return [Hash] The system cache.
-	cattr_reader :spersistant
-	
-	ppersistfile = R::Env.project_cache + "persistant.marshal"
-	if ppersistfile.exist? && R::CommandLine.cache
-		@ppersistant = Marshal.load(File.new(ppersistfile, 'r').read)
-	else
-		@ppersistant = {}
-	end
-	
-	END {
-		File.new(ppersistfile, 'w').write(Marshal.dump(@ppersistant))
-	}
-	
-	spersistfile = R::Env.global_cache + "persistant.marshal"
-	if spersistfile.exist? && R::CommandLine.cache
-		@spersistant = Marshal.load(spersistfile.read)
-	else
-		@spersistant = {}
-	end
-	
-	END {
-		spersistfile.open('w').write(Marshal.dump(@spersistant))
-	}
-	
-	# Clear the system cache.
-	def self.clear_system_cache
-		@spersistant.clear
-	end
-	# Clear the project cache.
-	def self.clear_project_cache
-		@ppersistant.clear
-	end
-	# Clear all caches.
-	def self.clear_cache
-		clear_system_cache
-		clear_project_cache
+		if not f.exist?
+			$stderr.puts "\"#{f}\" is not readable!"
+			Sysexits.exit :noinput
+		end
+		
+		@@loaded[f] = true
+		
+		Dir.chdir f.dirname do
+			load f.to_s
+		end
 	end
 end
 
-
+module C
+	# Add a directory to the build.
+	#
+	# This will run the "dir.rub" file in that directory synchronously.  Any
+	# values that that directory defines will be available when this call
+	# returns.
+	#
+	# This function only runs scripts once, if the script has already run this
+	# function will return success without running the script, and as the script
+	# has already been run the exported values should be available.
+	def self.add_dir(dir)
+		dir = C.path(dir)
+		
+		if not dir.directory?
+			raise "\"#{dir}\" is not a directory!"
+		end
+		
+		dir += 'dir.rub'
+		if not dir.exist?
+			raise "\"#{dir}\" does not exist!"
+		end
+		dir = dir.realpath
+		
+		R::I::Runner.do_file(dir)
+	end
+end
