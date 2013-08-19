@@ -32,6 +32,6 @@ $LOADED_FEATURES
 )
 
 module Rub
-	Slug = R::Version.slug + R::Version.version_major
+	Slug = R::Version.slug
 	Name = R::Version.name
 end

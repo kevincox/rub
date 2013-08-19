@@ -35,4 +35,5 @@ end
 vg = L::Template.generate_file 'lib/rub/r/version-generated.rb.erb', 'version-generated.rb'
 L::Util.install vg, "lib/#{Rub::Slug}/r/"
 
-L::Util.install 'LICENCE', "share/licences/#{Rub::Slug}/"
+L::Util.install 'README.md', "share/doc/#{Rub::Slug}/"
+L::Util.install 'LICENCE',   "share/licences/#{Rub::Slug}/"

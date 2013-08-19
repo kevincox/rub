@@ -29,9 +29,14 @@ module R::Version
 		'Rub'
 	end
 	
+	# Short easy-to-type name.
+	def self.stub
+		'rub'
+	end
+	
 	# Command name.
 	def self.slug
-		'rub'
+		stub + R::Version.version_major
 	end
 	
 	# Version number as a list.

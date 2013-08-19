@@ -134,11 +134,22 @@ EOS
 			when '--no-cache'
 				@cache = false
 			when '--doc'
+				lib    = Pathname.new(__FILE__).realpath.parent.parent
+				base   = lib.parent
+				
+				source = lib+'**/*.rb'
+				readme = [
+					base+'share/doc/'+R::Version.slug+'README.md', # Installed path.
+					base+'README.md'            # Dev path.
+				].find{|r| r.exist? }
+				pp readme
+				
 				exec(
 					'yardoc',
 					'--default-return', 'void',
 					*ARGV,
-					"#{Pathname.new(__FILE__).realpath.parent.to_s}/**/*.rb"
+					'-r', readme.to_s,
+					source.to_s
 				)
 			when '--help'
 				help.call
