@@ -27,108 +27,72 @@ module L::LD
 	# @!scope class
 	# All available linkers.
 	# @return [Hash{Symbol=>Linker}]
-	cattr_reader   :linkers
-	
+	cattr_reader :linkers
 	@linkers = {}
-	@prefered_linker = nil
-
-	# A set of options for controlling the build.
-	class Options
-		# @!scope class
-		# Default optimization level.
-		#
-		# This takes one of four optimization levels.  The actual optimization
-		# done is linker dependant.  For example, some linker may not have
-		# any optimization so all levels will be equivalent.
-		#
-		# One of the following:
-		# [+:none+] Perform no optimization.  This should be fast and debuggable.
-		# [+:some+] Perform light optimization that is pretty fast.
-		# [+:full+] Perform a high level of optimization producing a fast binary.
-		#           this may considerably slow down compilation.
-		# [+:max+]  Perform all available optimizations.  These may be
-		#           experimental and very slow.
-		#
-		# This value defaults to +:full+ if +D:debug+ is set, otherwise +:none+.
-		#
-		# @return [Symbol]
-		cattr_accessor :optimize
-		
-		# @!scope class
-		# A list of library search directories to be added to the default search
-		# path.
-		#
-		# These paths are searched in order.
-		#
-		# @return [Array<Pathname>]
-		cattr_reader   :library_dirs
-		
-		# @!scope class
-		# The default for static linking.
-		#
-		# If set to true shared libraries won't be used.  Defaults to false.
-		#
-		# @return [true,false]
-		cattr_accessor :static
-		
-		# @!scope class
-		# Default arguments to add to the linker command.
-		#
-		# @note This adds raw arguments to the linker command and is a quick n'
-		#       easy way to reduce portability.  If you can, use the other
-		#       options provided by this class in order to maintain portability.
-		#
-		# @return [Array<String>] A list of arguments to add.
-		cattr_accessor :args
-		
-		@optimize = D[:debug] ? :none : :full
-		@library_dirs = []
-		@static = false
-		@args = []
-		
-		# Optimization level
-		#
-		# Override the global optimization level.
-		#
-		# @return (see optimize)
-		# @see optimize
-		attr_accessor  :optimize
-		
-		# Library search path.
-		#
-		# Override the global library search path.
-		#
-		# @return (see library_dirs)
-		# @see library_dirs
-		attr_reader    :library_dirs
-		
-		# Static linking.
-		#
-		# Override the global static linking setting.
-		#
-		# @return (see static)
-		# @see static
-		attr_accessor  :static
-		
-		# Linker arguments.
-		#
-		# Override the global linker arguments.
-		#
-		# @return (see args)
-		# @see args
-		attr_accessor  :args
-		
-		def initialize
-			@optimize     = Options.optimize
-			@static       = Options.static
-			@library_dirs = Options.library_dirs.dup
-			@args         = Options.args.dup
-		end
-	end
 	
+	# @!scope class
+	# The linker being used.
+	# @return [Linker]
+	cattr_accessor :linker
+	
+	# @!scope class
+	# Default optimization level.
+	#
+	# This takes one of four optimization levels.  The actual optimization
+	# done is linker dependant.  For example, some linker may not have
+	# any optimization so all levels will be equivalent.
+	#
+	# One of the following:
+	# [+:none+] Perform no optimization.  This should be fast and debuggable.
+	# [+:some+] Perform light optimization that is pretty fast.
+	# [+:full+] Perform a high level of optimization producing a fast binary.
+	#           this may considerably slow down compilation.
+	# [+:max+]  Perform all available optimizations.  These may be
+	#           experimental and very slow.
+	#
+	# This value defaults to +:full+ if +D:debug+ is set, otherwise +:none+.
+	#
+	# @return [Symbol]
+	cattr_accessor :optimize
+	
+	# @!scope class
+	# A list of library search directories to be added to the default search
+	# path.
+	#
+	# These paths are searched in order.
+	#
+	# @return [Array<Pathname>]
+	cattr_reader :library_dirs
+	
+	# @!scope class
+	# The default for static linking.
+	#
+	# If set to true shared libraries won't be used.  Defaults to false.
+	#
+	# @return [true,false]
+	cattr_accessor :static
+	
+	# @!scope class
+	# Default arguments to add to the linker command.
+	#
+	# @note This adds raw arguments to the linker command and is a quick n'
+	#       easy way to reduce portability.  If you can, use the other
+	#       options provided by this class in order to maintain portability.
+	#
+	# @return [Array<String>] A list of arguments to add.
+	cattr_accessor :args
+	
+	@optimize = D[:debug] ? :none : :full
+	@library_dirs = []
+	@static = false
+	@args = []
+	
+	def self.set_linker(name)
+		self.linker = linkers[name]
+	end
+
 	# An abstraction for a linker.
 	module Linker
-		
 		# The name of the linker.
 		# @return [Symbol]
 		def self.name
@@ -140,6 +104,27 @@ module L::LD
 		# @return [true,false] true if the linker is available.
 		def self.available?
 			false
+		end
+		
+		# Return the linker's builtin library path.
+		#
+		# @return [Array<Pathname>]
+		def self.builtin_library_path
+			@builtin_library_path ||= [
+				'/lib/',
+				'/usr/lib/',
+				'/usr/local/lib/',
+				'~/.local/lib/',
+			].map do |l|
+				C.path(l)
+			end.uniq
+		end
+		
+		# Return the path which to search for libraries.
+		#
+		# @return [Array<Pathname>]
+		def self.library_path(options)
+			options.library_dirs + builtin_library_path
 		end
 		
 		# Generate a command to perform the link.
@@ -154,7 +139,7 @@ module L::LD
 		#                [+:shared+] A shared library.
 		# @param options [Options] An options object.
 		# @return [Set<Pathname>] The output file.
-		def self.link_command(files, libs, out, format: :exe, options: Options)
+		def self.link_command(files, libs, out, format, options)
 			raise NotImplementedError
 		end
 		
@@ -162,8 +147,8 @@ module L::LD
 		#
 		# @param (see link_command)
 		# @return [R::Command] the process that linked the file.
-		def self.do_link(files, libs, out, format: :exe, options: Options)
-			c = R::Command.new(link_command(files, libs, out, format: :exe, options: options))
+		def self.do_link(files, libs, out, format, options)
+			c = R::Command.new(link_command(files, libs, out, format, options))
 			c.run
 			c
 		end
@@ -172,8 +157,8 @@ module L::LD
 		#
 		# @param (see link_command)
 		# @return [true,false] true if the link succeeded.
-		def self.test_link(files, libs, format: :exe, options: Options)
-			c = do_link(files, libs, File::NULL, format: :exe, options: options)
+		def self.test_link(files, libs, format, options)
+			c = do_link(files, libs, File::NULL, format, options)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
@@ -201,44 +186,26 @@ module L::LD
 		# @param name [String] The basename of the library.
 		# @param options [Options] The options to use when linking.
 		# @return [Pathname] The path to the library.
-		def self.find_lib(name, options: Options)
-			whereis = C::find_command('whereis') or return nil
+		def self.find_lib(name, options)
+			sp = library_path(options)
+			name = full_name name, (options.static ? :static : :shared)
 			
-			c = R::Command.new [whereis, '-b', full_name(name, options.static ? :shared : :static)]
-			c.run or return nil
-			
-			l = c.stdout.split.drop(1).keep_if do |l|
-				options.static ? l.end_with?('.a') : l.end_with?('.so')
+			sp.each do |d|
+				l = d + name
+				
+				l.exist? and return l
 			end
-			
-			l[0]
 		end
 	end
 	
 	R::Tool.load_dir(Pathname.new(__FILE__).realpath.dirname+"ld/linker/")
-	
 	@linkers.keep_if do |n, l|
 		l.available? or next false
 	end
 	
 	D[:l_ld_linker].map! {|l| l.to_sym}
-	@prefered_linker = D[:l_ld_linker].find {|l| @linkers.has_key? l}
-	
-	# Return a linker object.
-	#
-	# @param name [Symbol,nil,Object] The name of the linker.
-	# @return [Linker] The linker identified by +name+ or nil.  If a non-symbol
-	#                  non-nil object is passed by in name it is returned
-	#                  without ensuring it is a liker.
-	def self.linker(name=nil)
-		name ||= @prefered_linker
-	
-		if name.is_a? Symbol
-			@linkers[name]
-		else
-			name
-		end
-	end
+	@linker = D[:l_ld_linker].find {|l| @linkers.has_key? l}
+	@linker = @linkers[@linker]
 	
 	# Link object files.
 	#
@@ -253,18 +220,16 @@ module L::LD
 	# @param linker  [Symbol] The linker to use.  If nil, use the default.
 	# @param options [Options] An options object.
 	# @return [Pathname] The output file.
-	def self.link(src, libs, name, format: :exe, linker: nil, options: Options)
+	def self.link(src, libs, name, format: :exe)
 		src  = R::Tool.make_set_paths src
 		libs = R::Tool.make_set libs
 		
-		linker = linker linker
-		
-		libfs = libs.map {|l| linker.find_lib l or raise "Can't find library #{l}."}
+		libfs = libs.map {|l| linker.find_lib(l, self) or raise "Can't find library #{l}."}
 		
 		out = linker.full_name name, format
-		out = R::Env.out_dir + 'l/ld/' + C.unique_segment([src, libs, options]) + out
+		out = R::Env.out_dir + 'l/ld/' + C.unique_segment([src, libs, self]) + out
 		
-		C::generator(src+libfs, linker.link_command(src, libs, out, format: format, options: options), out)
+		C::generator(src+libfs, linker.link_command(src, libs, out, format, self), out)
 		
 		out
 	end

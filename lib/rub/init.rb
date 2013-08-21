@@ -33,6 +33,35 @@ require 'digest/sha1'
 require 'sysexits'
 require 'xdg'
 
+# This is first so we modify all of our classes.
+'
+class Object
+	def self.method_added name
+		return if name == :initialize
+		return if @__last_methods_added && @__last_methods_added.include?(name)
+		
+		with = :"#{name}_with_before_each_method"
+		without = :"#{name}_without_before_each_method"
+		
+		@__last_methods_added = [name, with, without]
+		define_method with do |*args, &block|
+			puts "#{self.class}##{name}"
+			pp args, &block
+			puts "calling..."
+			
+			r = send without, *args, &block
+			
+			puts "#{self.class}##{name} returned"
+			
+			r
+		end
+		alias_method without, name
+		alias_method name, with
+		@__last_methods_added = nil
+	end
+end
+#'
+
 ##### Load the namespaces.
 require_relative 'd'
 require_relative 'r'

@@ -22,75 +22,73 @@
 #                                                                              #
 ################################################################################
 
-module L::C
-	CompilerClang = Compiler.clone
-	module CompilerClang
-		
-		def self.name
-			:clang
-		end
-		
-		def self.available?
-			!!find
-		end
-		
-		def self.find
-			@exe and return @exe
-		
-			@exe = ::C.find_command 'clang'
-		end
-		
-		def self.linker
-			:clang
-		end
-		
-		@@o_flags = {
-			:none=>'-O0',
-			:some=>'-O1',
-			:full=>'-O3',
-			:max =>'-O4',
-		}
-		@@of_flags = {
-			nil=>[],
-			:speed=>[],
-			:size=>'-Os',
-		}
-		
-		def self.generate_flags(options)
-			f = []
-			
-			#f << '-emit-llvm'
-			
-			f << (@@o_flags[options.optimize    ] || [])
-			f << (@@o_flags[options.optimize_for] || [])
-			
-			f << options.include_dirs.map do |d|
-				"-I#{d}"
-			end
-			f << options.define.map do |k, v|
-				if v
-					# -Dk if v is true else -Dk=v.
-					"-D#{k}#{v.equal?(true)?"":"=#{v}"}"
-				else
-					"-U#{k}"
-				end
-			end
-			
-			f.flatten!
-		end
-		
-		def self.compile_command(src, obj, options: Options)
-			[find, '-c', *generate_flags(options), "-o#{obj}", *src]
-		end
-		
-		def self.do_compile_string(str, obj, options: Options.new)
-			c = R::Command.new [find, '-c', '-xc', *generate_flags(options), '-o', obj, '-']
-			c.stdin = str
-			c.run
-			c
-		end
+L::C::CompilerClang = L::C::Compiler.clone
+
+# The Clang Compiler
+module L::C::CompilerClang
+	def self.name
+		:clang
 	end
-	L::C.compilers[:clang] = CompilerClang
 	
-	D.append(:l_c_compiler, :clang)
+	def self.available?
+		!!find
+	end
+	
+	def self.find
+		@exe and return @exe
+	
+		@exe = ::C.find_command 'clang'
+	end
+	
+	def self.linker
+		:clang
+	end
+	
+	@@o_flags = {
+		:none=>'-O0',
+		:some=>'-O1',
+		:full=>'-O3',
+		:max =>'-O4',
+	}
+	@@of_flags = {
+		nil=>[],
+		:speed=>[],
+		:size=>'-Os',
+	}
+	
+	def self.generate_flags(options)
+		f = []
+		
+		#f << '-emit-llvm'
+		
+		f << (@@o_flags[options.optimize    ] || [])
+		f << (@@o_flags[options.optimize_for] || [])
+		
+		f << options.include_dirs.map do |d|
+			"-I#{d}"
+		end
+		f << options.define.map do |k, v|
+			if v
+				# -Dk if v is true else -Dk=v.
+				"-D#{k}#{v.equal?(true)?"":"=#{v}"}"
+			else
+				"-U#{k}"
+			end
+		end
+		
+		f.flatten!
+	end
+	
+	def self.compile_command(src, obj, options)
+		[find, '-c', *generate_flags(options), "-o#{obj}", *src]
+	end
+	
+	def self.do_compile_string(str, obj, options)
+		c = R::Command.new [find, '-c', '-xc', *generate_flags(options), '-o', obj, '-']
+		c.stdin = str
+		c.run
+		c
+	end
 end
+L::C.compilers[:clang] = L::C::CompilerClang
+D.append(:l_c_compiler, :clang)

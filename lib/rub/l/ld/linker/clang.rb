@@ -39,11 +39,10 @@ module L::LD
 			C.find_command 'clang'
 		end
 		
-		def self.link_command(files, libs, out, format: :exe, options: nil)
+		def self.link_command(files, libs, out, format, options)
 			files = R::Tool.make_set_paths files
 			libs  = R::Tool.make_set       libs
 			out = C.path(out)
-			options ||= Options.new
 		
 			c = [find, "-o#{out}"]
 			

@@ -39,7 +39,7 @@ module L::LD
 			C.find_command 'ld'
 		end
 		
-		def self.link_command(files, libs, out, format: :exe, options: Options)
+		def self.link_command(files, libs, out, format, options)
 			files = R::Tool.make_set_paths files
 			libs  = R::Tool.make_set libs
 			out = C.path out

@@ -29,182 +29,95 @@ module L::C
 	# @!scope class
 	# All available compilers.
 	# @return [Hash{Symbol=>Compiler}]
-	cattr_reader   :compilers
-	
+	cattr_accessor :compilers
 	@compilers = {}
 
-	# Compiler options.
-	class Options
-		# Compiler
-		#
-		# The compiler to use.
-		#
-		# @return (see compiler)
-		# @see compiler
-		cattr_accessor :compiler
-		
-		# @!scope class
-		# Default optimization level.
-		#
-		# This takes one of four optimization levels.  The actual optimization
-		# done is linker dependant.  For example, some linker may not have
-		# any optimization so all levels will be equivalent.
-		#
-		# One of the following:
-		# [+:none+] Perform no optimization.  This should be fast and debuggable.
-		# [+:some+] Perform light optimization that is pretty fast.
-		# [+:full+] Perform a high level of optimization producing a fast binary.
-		#           this may considerably slow down compilation.
-		# [+:max+]  Perform all available optimizations.  These may be
-		#           experimental and very slow.
-		#
-		# This value defaults to +:full+ if +D:debug+ is set, otherwise +:none+.
-		#
-		# @return [Symbol]
-		cattr_accessor :optimize
-		
-		# @!scope class
-		# Default optimization goal.
-		#
-		# This determines what the compiler should optimize for if it has the
-		# option.
-		#
-		# One of the following:
-		# [+:size+]  The compiler should focus on creating a small binary.
-		# [+:speed+] The compiler should focus on creating a fast binary.
-		#
-		# @return [Symbol]
-		cattr_accessor :optimize_for
-		
-		# @!scope class
-		# Default debug symbols setting.
-		#
-		# This determines if the compiler should produce debugging symbols.
-		#
-		# @return [true,false]
-		cattr_accessor :debug
-		
-		# @!scope class
-		# Default profile symbols setting.
-		#
-		# This determines if the compiler should produce code suitable for
-		# profiling.
-		#
-		# @return [true,false]
-		cattr_accessor :profile
+	# Compiler
+	#
+	# The compiler to use.
+	#
+	# @return (see compiler)
+	# @see compiler
+	cattr_accessor :compiler
 	
-		# @!scope class
-		# A list of directories to search for header files.
-		#
-		# These paths are searched in order.
-		#
-		# @return [Array<Pathname>]
-		cattr_reader :include_dirs
+	# @!scope class
+	# Default optimization level.
+	#
+	# This takes one of four optimization levels.  The actual optimization
+	# done is linker dependant.  For example, some linker may not have
+	# any optimization so all levels will be equivalent.
+	#
+	# One of the following:
+	# [+:none+] Perform no optimization.  This should be fast and debuggable.
+	# [+:some+] Perform light optimization that is pretty fast.
+	# [+:full+] Perform a high level of optimization producing a fast binary.
+	#           this may considerably slow down compilation.
+	# [+:max+]  Perform all available optimizations.  These may be
+	#           experimental and very slow.
+	#
+	# This value defaults to +:full+ if +D:debug+ is set, otherwise +:none+.
+	#
+	# @return [Symbol]
+	cattr_accessor :optimize
 	
-		# @!scope class
-		# A list of libraries to link.
-		#
-		# @return [Array<String,Pathname>]
-		cattr_reader :libs
-		
-		# @!scope class
-		# A list of macros to define.  nil can be used to undefine a macro.
-		#
-		# @return [Hash{String=>String,true,nil}]
-		cattr_reader :define
-		
-		@debug = @profile = !!D[:debug]
-		@optimize = @debug ? :none : :full
-		
-		@include_dirs = []
-		@libs         = []
-		@define = {
-			@debug ? 'DEBUG' : 'NDEBUG' => true,
-		}
-		
-		# Compiler
-		#
-		# The compiler to use.
-		#
-		# @return (see compiler)
-		# @see compiler
-		attr_accessor :compiler
-		
-		# Optimization level
-		#
-		# Override the global optimization level.
-		#
-		# @return (see optimize)
-		# @see optimize
-		attr_accessor :optimize
-		
-		# Optimization goal.
-		#
-		# Override the global optimization goal.
-		#
-		# @return (see optimize_for)
-		# @see optimize_for
-		attr_accessor :optimize_for
-		
-		# Debugging Symbols
-		#
-		# Override the global debugging settings.
-		#
-		# @return (see debug)
-		# @see debug
-		attr_accessor :debug
-		
-		# Profile setting.
-		#
-		# Override the global profiling setting.
-		#
-		# @return (see profile)
-		# @see profile
-		attr_accessor :profile
+	# @!scope class
+	# Default optimization goal.
+	#
+	# This determines what the compiler should optimize for if it has the
+	# option.
+	#
+	# One of the following:
+	# [+:size+]  The compiler should focus on creating a small binary.
+	# [+:speed+] The compiler should focus on creating a fast binary.
+	#
+	# @return [Symbol]
+	cattr_accessor :optimize_for
 	
-		# Include path.
-		#
-		# Override the global include path.
-		#
-		# @return (see include_dirs)
-		# @see include_dirs
-		attr_reader :include_dirs
+	# @!scope class
+	# Default debug symbols setting.
+	#
+	# This determines if the compiler should produce debugging symbols.
+	#
+	# @return [true,false]
+	cattr_accessor :debug
 	
-		# @!scope class
-		# A list of libraries to link.
-		#
-		# @return (see include_dirs)
-		# @see include_dirs
-		attr_reader :libs
-		
-		# Macro definitions.
-		#
-		# Override the global definitions list..
-		#
-		# @return (see define)
-		# @see define
-		attr_accessor :define
-		
-		def initialize(template = Options)
-			@compiler     = template.compiler
-			@optimize     = template.optimize
-			@optimize_for = template.optimize_for
-			
-			@debug   = template.debug
-			@profile = template.profile
-			
-			@include_dirs = template.include_dirs.dup
-			@libs         = template.libs.dup
-			@define       = template.define.dup
-		end
-		
-		def self.dup
-			new
-		end
-		def dup
-			Options.new self
-		end
-	end
+	# @!scope class
+	# Default profile symbols setting.
+	#
+	# This determines if the compiler should produce code suitable for
+	# profiling.
+	#
+	# @return [true,false]
+	cattr_accessor :profile
+
+	# @!scope class
+	# A list of directories to search for header files.
+	#
+	# These paths are searched in order.
+	#
+	# @return [Array<Pathname>]
+	cattr_reader :include_dirs
+
+	# @!scope class
+	# A list of libraries to link.
+	#
+	# @return [Array<String,Pathname>]
+	cattr_reader :libs
+	
+	# @!scope class
+	# A list of macros to define.  nil can be used to undefine a macro.
+	#
+	# @return [Hash{String=>String,true,nil}]
+	cattr_reader :define
+	
+	@debug = @profile = !!D[:debug]
+	@optimize = @debug ? :none : :full
+	
+	@include_dirs = []
+	@libs         = []
+	@define = {
+		@debug ? 'DEBUG' : 'NDEBUG' => true,
+	}
 	
 	# An Abstraction over different compilers.
 	module Compiler
@@ -238,7 +151,7 @@ module L::C
 		# @param obj     [Pathname,String] The path of the output file.
 		# @param options [Options] An options object.
 		# @return [Pathname] The output file.
-		def self.compile_command(src, obj, options: Options)
+		def self.compile_command(src, obj, options)
 			raise "Not implemented!"
 		end
 		
@@ -246,9 +159,8 @@ module L::C
 		#
 		# @param (see compile_command)
 		# @return [R::Command] the process that compiled the file.
-		def self.do_compile_file(f, obj, options: Options.new)
-			compile_command(f, obj)
-			c = R::Command.new(compile_command(f, obj, options: options))
+		def self.do_compile_file(f, obj, options)
+			c = R::Command.new(compile_command(f, obj, options))
 			c.run
 			c
 		end
@@ -260,11 +172,11 @@ module L::C
 		# @param obj     [Pathname,String] The path of the output file.
 		# @param options [Options] An options object.
 		# @return [R::Command] the process that compiled the string.
-		def self.do_compile_string(str, obj, options: Options.new)
+		def self.do_compile_string(str, obj, options)
 			f = Tempfile.new(['rub.l.c.testcompile', '.c'])
 			f.write(str)
 			f.close
-			c = do_compile_file(f.path, obj, options: options)
+			c = do_compile_file(f.path, obj, options)
 			f.unlink
 			c
 		end
@@ -273,8 +185,8 @@ module L::C
 		#
 		# @param (see do_compile_file)
 		# @return [true,false] true if the compilation succeeded.
-		def self.test_compile(src, options: Options.new)
-			c = do_compile_file(src, File::NULL, options: options)
+		def self.test_compile(src, options)
+			c = do_compile_file(src, File::NULL, options)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
@@ -283,8 +195,8 @@ module L::C
 		#
 		# @param (see do_compile_string)
 		# @return [true,false] true if the compilation succeeded.
-		def self.test_compile_string(src, options: Options.new)
-			c = do_compile_string(src, File::NULL, options: options)
+		def self.test_compile_string(src, options)
+			c = do_compile_string(src, File::NULL, options)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
@@ -293,8 +205,8 @@ module L::C
 		#
 		# @param name [String] macro identifier.
 		# @return [true,false] true if the macro is defined.
-		def self.test_macro(name)
-			test_compile_string <<EOF
+		def self.test_macro(name, options)
+			test_compile_string <<EOF, options
 #ifndef #{name}
 #error "#{name}Not Defined"
 #endif
@@ -320,6 +232,10 @@ EOF
 		end
 	end
 	
+	def get_compiler(name)
+		compilers[name]
+	end
+	
 	R::Tool.load_dir(Pathname.new(__FILE__).realpath.dirname+"c/compiler/")
 	
 	tdir = Pathname.new(__FILE__).realpath.dirname + "c/test/"
@@ -328,9 +244,9 @@ EOF
 		c.available? or next false
 		
 		r = (
-				c.test_compile(tdir+'basic.c') and
-				not c.test_compile(tdir+'undefined.c') and
-				c.test_macro '__LINE__'
+				c.test_compile(tdir+'basic.c', self) and
+				not c.test_compile(tdir+'undefined.c', self) and
+				c.test_macro('__LINE__', self)
 			)
 		
 		r or $stderr.puts "Ignoring compiler #{n} because it failed the tests."
@@ -339,32 +255,15 @@ EOF
 	end
 	
 	D[:l_c_compiler].map! {|c| c.to_sym}
+	@compiler = compilers[ D[:l_c_compiler].find{|c| compilers.has_key? c} ]
 	
-	Options.compiler = @compilers[ D[:l_c_compiler].find {|c| @compilers.has_key? c} ]
-	
-	# Return a compiler object.
+	# Compile source files.
 	#
-	# @param name [Symbol,nil,Object] The name of the compiler.
-	# @return [Compiler] The compiler identified by +name+ or nil.  If a
-	#                    non-symbol non-nil object is passed by in name it is
-	#                    returned without ensuring it is a compiler.
-	def self.compiler(name=nil)
-		name ||= @prefered_compiler
-		
-		if name.is_a? Symbol
-			@compilers[name]
-		else
-			name
-		end
-	end
-	
-		# Compile source files.
-		#
-		# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
-		#                The source files to compile and generated headers.
-		# @param options [Options] An options object.
-		# @return [Set<Pathname>] The resulting object files.
-	def self.compile(src, options: Options)
+	# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#                The source files to compile and generated headers.
+	# @param options [Options] An options object.
+	# @return [Set<Pathname>] The resulting object files.
+	def self.compile(src)
 		src = R::Tool.make_set_paths src
 		
 		headers = Set.new
@@ -378,10 +277,10 @@ EOF
 		end
 	
 		src.map! do |s|
-			out = R::Env.out_dir + 'l/c/' + C.unique_segment(options) + "#{s.basename}.o"
+			out = R::Env.out_dir + 'l/c/' + C.unique_segment(self) + "#{s.basename}.o"
 			
-			R.find_target(s) or TargetCSource.new(s, headers, options)
-			::C.generator(s, options.compiler.compile_command(s, out, options: options), out, desc:"Compiling")
+			R.find_target(s) or TargetCSource.new(s, headers, self)
+			::C.generator(s, compiler.compile_command(s, out, self), out, desc:"Compiling")
 		end
 		src.flatten!
 		src
@@ -397,7 +296,7 @@ EOF
 		#	@@inited = true
 		#end
 	
-		def initialize(f, input = [], options = Options)
+		def initialize(f, input = [], options)
 			#TargetC.initialize
 			
 			@f = C.path(f)
@@ -407,7 +306,7 @@ EOF
 			register
 		end
 		
-		def included_files(set=Set.new, options=Options)
+		def included_files(set=Set.new, options)
 			set.include?(@f) and return
 		
 			set << @f
@@ -449,7 +348,7 @@ EOF
 		end
 		
 		def input
-			@input + included_files
+			@input + included_files(@opt)
 		end
 		
 		def output
@@ -471,7 +370,7 @@ EOF
 	end
 	
 	class TargetGeneratedHeader < R::TargetSmart
-		def initialize(name, h, c, values, options: Options)
+		def initialize(name, h, c, values, options)
 			super()
 			
 			@n = name
@@ -544,14 +443,14 @@ EOS
 	# Generate a header
 	#
 	# Generates a header with information in it.
-	def self.generate_header(name, vals, options: Options)
+	def self.generate_header(name, vals)
 		h = C.unique_path("#{name}.h", vals)
 		c = C.unique_path("#{name}.c", vals)
 		
-		t = TargetGeneratedHeader.new(name, h, c, vals)
+		t = TargetGeneratedHeader.new(name, h, c, vals, self)
 		t.register
 		
-		options.include_dirs << h.dirname
+		include_dirs << h.dirname
 		
 		t.output
 	end
@@ -564,13 +463,15 @@ EOS
 	# @param options  [Options] An options object for the compiler.
 	# @param loptions [L::LD::Options] An options object for the linker.
 	# @return [Pathname] The resulting executable.
-	def self.program(src, name,
-	                 options: Options,
-	                 loptions: L::LD::Options
-	                )
-		compiler = compiler compiler
+	def self.program(src, name)
+		obj = compile(src)
+		linker = L::LD.clone
 		
-		obj = compile(src, options: options)
-		L::LD.link(obj, options.libs, name, format: :exe, linker: options.compiler.linker, options: loptions)
+		linker.set_linker compiler.linker
+		linker.link(obj, libs, name, format: :exe)
+	end
+	
+	def initialize_copy(source)
+		
 	end
 end
