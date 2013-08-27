@@ -14,7 +14,7 @@ abstract away the system dependant details and allow your project to build on
 a wide variety of systems.  You tell these libraries what you want done and they
 tell Rub how to do it.
 
-Rub treats every build as fresh, there is no clean or configure steps.  You
+Rub treats every build as fresh, there are no clean or configure steps.  You
 simply run rub with what you want built and it generates your project.  However,
 in the interest of speed Rub "caches" results.  If all the inputs, outputs and
 commands are the same as the last run Rub knows that the same file will be
