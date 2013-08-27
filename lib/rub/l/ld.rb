@@ -22,6 +22,8 @@
 #                                                                              #
 ################################################################################
 
+require 'valid-array'
+
 # Linker Library
 module L::LD
 	# @!scope class
@@ -188,6 +190,9 @@ module L::LD
 		# @return [Pathname] The path to the library.
 		def self.find_lib(opt, name)
 			sp = library_path(opt)
+			if name.to_s.include? '/'
+				return C.path name
+			end
 			name = full_name name, (opt.static ? :static : :shared)
 			
 			sp.each do |d|
@@ -206,6 +211,14 @@ module L::LD
 	D[:l_ld_linker].map! {|l| l.to_sym}
 	@linker = D[:l_ld_linker].find {|l| @linkers.has_key? l}
 	@linker = @linkers[@linker]
+	
+	class LibraryArray < Array
+		extend ValidArray
+		
+		def self.validate(l)
+			L::LD.linker.find_lib(L::LD, l) or raise "Can't find library #{l}"
+		end
+	end
 	
 	# Link object files.
 	#

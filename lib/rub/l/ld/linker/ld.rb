@@ -78,7 +78,8 @@ module L::LD
 			
 			c << opt.library_dirs.map{|d| "-L#{d}"}
 			
-			c << libs.map{|l| "-l#{l}" }
+			#c << libs.map{|l| "-l#{l}" }
+			c << libs.map{|l| "#{l}" }
 			c << files.to_a
 			
 			c.flatten

@@ -116,8 +116,8 @@ module L::C
 	@debug = @profile = !!D[:debug]
 	@optimize = @debug ? :none : :full
 	
-	@include_dirs = []
-	@libs         = []
+	@include_dirs = R::Tool::PathArray.new
+	@libs         = L::LD::LibraryArray.new
 	@define = {
 		@debug ? 'DEBUG' : 'NDEBUG' => true,
 	}

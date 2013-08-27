@@ -152,7 +152,7 @@ module R::Tool
 	class PathArray < Array
 		extend ValidArray
 		
-		def _ensure_item_is_allowed(item, expected=nil)
+		def self.validate(item)
 			C.path item
 		end
 	end
