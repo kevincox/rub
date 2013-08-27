@@ -96,19 +96,19 @@ module L::C
 	# These paths are searched in order.
 	#
 	# @return [Array<Pathname>]
-	cattr_reader :include_dirs
+	cattr_accessor :include_dirs
 
 	# @!scope class
 	# A list of libraries to link.
 	#
 	# @return [Array<String,Pathname>]
-	cattr_reader :libs
+	cattr_accessor :libs
 	
 	# @!scope class
 	# A list of macros to define.  nil can be used to undefine a macro.
 	#
 	# @return [Hash{String=>String,true,nil}]
-	cattr_reader :define
+	cattr_accessor :define
 	
 	@debug = @profile = !!D[:debug]
 	@optimize = @debug ? :none : :full
@@ -149,9 +149,9 @@ module L::C
 		# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 		#                The source files to link and generated headers.
 		# @param obj     [Pathname,String] The path of the output file.
-		# @param options [Options] An options object.
+		# @param opt [Options] An options object.
 		# @return [Pathname] The output file.
-		def self.compile_command(src, obj, options)
+		def self.compile_command(opt, src, obj)
 			raise "Not implemented!"
 		end
 		
@@ -159,8 +159,8 @@ module L::C
 		#
 		# @param (see compile_command)
 		# @return [R::Command] the process that compiled the file.
-		def self.do_compile_file(f, obj, options)
-			c = R::Command.new(compile_command(f, obj, options))
+		def self.do_compile_file(opt, f, obj)
+			c = R::Command.new(compile_command(opt, f, obj))
 			c.run
 			c
 		end
@@ -170,13 +170,13 @@ module L::C
 		# @param str     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 		#                A string containing the complete source to compile.
 		# @param obj     [Pathname,String] The path of the output file.
-		# @param options [Options] An options object.
+		# @param opt [Options] An options object.
 		# @return [R::Command] the process that compiled the string.
-		def self.do_compile_string(str, obj, options)
+		def self.do_compile_string(opt, str, obj)
 			f = Tempfile.new(['rub.l.c.testcompile', '.c'])
 			f.write(str)
 			f.close
-			c = do_compile_file(f.path, obj, options)
+			c = do_compile_file(opt, f.path, obj)
 			f.unlink
 			c
 		end
@@ -185,8 +185,8 @@ module L::C
 		#
 		# @param (see do_compile_file)
 		# @return [true,false] true if the compilation succeeded.
-		def self.test_compile(src, options)
-			c = do_compile_file(src, File::NULL, options)
+		def self.test_compile(opt, src)
+			c = do_compile_file(opt, src, File::NULL)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
@@ -195,8 +195,8 @@ module L::C
 		#
 		# @param (see do_compile_string)
 		# @return [true,false] true if the compilation succeeded.
-		def self.test_compile_string(src, options)
-			c = do_compile_string(src, File::NULL, options)
+		def self.test_compile_string(opt, src)
+			c = do_compile_string(opt, src, File::NULL)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
@@ -205,15 +205,15 @@ module L::C
 		#
 		# @param name [String] macro identifier.
 		# @return [true,false] true if the macro is defined.
-		def self.test_macro(name, options)
-			test_compile_string <<EOF, options
+		def self.test_macro(opt, name)
+			test_compile_string opt, <<EOF
 #ifndef #{name}
 #error "#{name}Not Defined"
 #endif
 EOF
 		end
 		
-		def self.include_directories(options)
+		def self.include_directories(opt)
 			@include_directories and return @include_directories.dup
 			
 			cmd = [C.find_command('cpp'), '-v', '-o', File::NULL, File::NULL]
@@ -244,9 +244,9 @@ EOF
 		c.available? or next false
 		
 		r = (
-				c.test_compile(tdir+'basic.c', self) and
-				not c.test_compile(tdir+'undefined.c', self) and
-				c.test_macro('__LINE__', self)
+				c.test_compile(self, tdir+'basic.c') and
+				not c.test_compile(self, tdir+'undefined.c') and
+				c.test_macro(self, '__LINE__')
 			)
 		
 		r or $stderr.puts "Ignoring compiler #{n} because it failed the tests."
@@ -261,7 +261,7 @@ EOF
 	#
 	# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 	#                The source files to compile and generated headers.
-	# @param options [Options] An options object.
+	# @param opt [Options] An options object.
 	# @return [Set<Pathname>] The resulting object files.
 	def self.compile(src)
 		src = R::Tool.make_set_paths src
@@ -279,8 +279,8 @@ EOF
 		src.map! do |s|
 			out = R::Env.out_dir + 'l/c/' + C.unique_segment(self) + "#{s.basename}.o"
 			
-			R.find_target(s) or TargetCSource.new(s, headers, self)
-			::C.generator(s, compiler.compile_command(s, out, self), out, desc:"Compiling")
+			R.find_target(s) or TargetCSource.new(self, s, headers)
+			::C.generator(s, compiler.compile_command(self, s, out), out, desc:"Compiling")
 		end
 		src.flatten!
 		src
@@ -288,25 +288,17 @@ EOF
 	
 	# A C source file.
 	class TargetCSource < R::Target
-		#def self.initialize
-		#	@@inited and return
-		#	
-		#	
-		#	
-		#	@@inited = true
-		#end
-	
-		def initialize(f, input = [], options)
+		def initialize(opt, f, input = [])
 			#TargetC.initialize
 			
 			@f = C.path(f)
-			@opt = options
+			@opt = opt
 			@input = input
 			
 			register
 		end
 		
-		def included_files(set=Set.new, options)
+		def included_files(opt, set=Set.new)
 			set.include?(@f) and return
 		
 			set << @f
@@ -317,7 +309,7 @@ EOF
 				end
 				
 				p  = Pathname.new( $2 || $3 )
-				ip = @opt.compiler.include_directories(@opt)
+				ip = opt.compiler.include_directories(opt)
 				
 				if $2
 					ip << @f.dirname
@@ -337,10 +329,10 @@ EOF
 			end.compact
 			
 			@incs.each do |h|
-				icd = R::find_target(h) || TargetCSource.new(h, @input, @opt)
+				icd = R::find_target(h) || TargetCSource.new(opt, h, @input)
 				
 				if icd.respond_to? :included_files
-					icd.included_files set, options
+					icd.included_files opt, set
 				else
 					set << h
 				end
@@ -370,7 +362,7 @@ EOF
 	end
 	
 	class TargetGeneratedHeader < R::TargetSmart
-		def initialize(name, h, c, values, options)
+		def initialize(opt, name, h, c, values)
 			super()
 			
 			@n = name
@@ -447,7 +439,7 @@ EOS
 		h = C.unique_path("#{name}.h", vals)
 		c = C.unique_path("#{name}.c", vals)
 		
-		t = TargetGeneratedHeader.new(name, h, c, vals, self)
+		t = TargetGeneratedHeader.new(self, name, h, c, vals)
 		t.register
 		
 		include_dirs << h.dirname
@@ -460,8 +452,6 @@ EOS
 	# @param src      [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 	#                 The source files to compile and generated headers.
 	# @param name     [Pathname,String] The basename of the output file.
-	# @param options  [Options] An options object for the compiler.
-	# @param loptions [L::LD::Options] An options object for the linker.
 	# @return [Pathname] The resulting executable.
 	def self.program(src, name)
 		obj = compile(src)
@@ -471,7 +461,11 @@ EOS
 		linker.link(obj, libs, name, format: :exe)
 	end
 	
-	def initialize_copy(source)
+	def self.initialize_copy(s)
+		super
 		
+		self.include_dirs = s.include_dirs.dup
+		self.libs = s.libs.dup
+		self.define = s.define.dup
 	end
 end

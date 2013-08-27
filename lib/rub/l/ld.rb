@@ -62,7 +62,7 @@ module L::LD
 	# These paths are searched in order.
 	#
 	# @return [Array<Pathname>]
-	cattr_reader :library_dirs
+	cattr_accessor :library_dirs
 	
 	# @!scope class
 	# The default for static linking.
@@ -123,8 +123,8 @@ module L::LD
 		# Return the path which to search for libraries.
 		#
 		# @return [Array<Pathname>]
-		def self.library_path(options)
-			options.library_dirs + builtin_library_path
+		def self.library_path(opt)
+			opt.library_dirs + builtin_library_path
 		end
 		
 		# Generate a command to perform the link.
@@ -137,9 +137,9 @@ module L::LD
 		#                One of:
 		#                [+:exe+]    An executable binary.
 		#                [+:shared+] A shared library.
-		# @param options [Options] An options object.
+		# @param opt [Options] An options object.
 		# @return [Set<Pathname>] The output file.
-		def self.link_command(files, libs, out, format, options)
+		def self.link_command(opt, files, libs, out, format)
 			raise NotImplementedError
 		end
 		
@@ -147,8 +147,8 @@ module L::LD
 		#
 		# @param (see link_command)
 		# @return [R::Command] the process that linked the file.
-		def self.do_link(files, libs, out, format, options)
-			c = R::Command.new(link_command(files, libs, out, format, options))
+		def self.do_link(opt, files, libs, out, format)
+			c = R::Command.new(link_command(opt, files, libs, out, format))
 			c.run
 			c
 		end
@@ -157,8 +157,8 @@ module L::LD
 		#
 		# @param (see link_command)
 		# @return [true,false] true if the link succeeded.
-		def self.test_link(files, libs, format, options)
-			c = do_link(files, libs, File::NULL, format, options)
+		def self.test_link(opt, files, libs, format)
+			c = do_link(opt, files, libs, File::NULL, format)
 			#p c.success?, c.stdin, c.stdout, c.stderr
 			c.success?
 		end
@@ -186,9 +186,9 @@ module L::LD
 		# @param name [String] The basename of the library.
 		# @param options [Options] The options to use when linking.
 		# @return [Pathname] The path to the library.
-		def self.find_lib(name, options)
-			sp = library_path(options)
-			name = full_name name, (options.static ? :static : :shared)
+		def self.find_lib(opt, name)
+			sp = library_path(opt)
+			name = full_name name, (opt.static ? :static : :shared)
 			
 			sp.each do |d|
 				l = d + name
@@ -218,19 +218,24 @@ module L::LD
 	#                [+:exe+]    An executable binary.
 	#                [+:shared+] A shared library.
 	# @param linker  [Symbol] The linker to use.  If nil, use the default.
-	# @param options [Options] An options object.
 	# @return [Pathname] The output file.
 	def self.link(src, libs, name, format: :exe)
 		src  = R::Tool.make_set_paths src
 		libs = R::Tool.make_set libs
 		
-		libfs = libs.map {|l| linker.find_lib(l, self) or raise "Can't find library #{l}."}
+		libfs = libs.map {|l| linker.find_lib(self, l) or raise "Can't find library #{l}."}
 		
 		out = linker.full_name name, format
-		out = R::Env.out_dir + 'l/ld/' + C.unique_segment([src, libs, self]) + out
+		out = R::Env.out_dir + 'l/ld/' + C.unique_segment(src, libs, self) + out
 		
-		C::generator(src+libfs, linker.link_command(src, libs, out, format, self), out)
+		C::generator(src+libfs, linker.link_command(self, src, libs, out, format), out)
 		
 		out
+	end
+	
+	def self.initialize_copy(s)
+		super
+		
+		self.library_dirs = s.library_dirs.dup
 	end
 end

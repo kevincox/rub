@@ -39,14 +39,14 @@ module L::LD
 			C.find_command 'clang'
 		end
 		
-		def self.link_command(files, libs, out, format, options)
+		def self.link_command(opt, files, libs, out, format)
 			files = R::Tool.make_set_paths files
 			libs  = R::Tool.make_set       libs
 			out = C.path(out)
 		
 			c = [find, "-o#{out}"]
 			
-			c << options.args
+			c << opt.args
 			
 			c << case format
 				when :exe
@@ -57,7 +57,7 @@ module L::LD
 					raise "Unknown/unsupported output #{format}."
 			end
 			
-			c << case options.optimize
+			c << case opt.optimize
 				when :none
 					'-O0'
 				when :some
@@ -67,41 +67,22 @@ module L::LD
 				when :max
 					'-O4'
 				else
-					raise "Invalid optimization level #{options.optimize}."
+					raise "Invalid optimization level #{opt.optimize}."
 			end
 			
-			c << if options.static
+			c << if opt.static
 				'-static'
 			else
 				[]
 			end
 			
-			c << options.library_dirs.map{|d| "-L#{d}"}
+			c << opt.library_dirs.map{|d| "-L#{d}"}
 			
 			c << libs.map{|l| "-l#{l}" }
 			c << files.to_a
 			
 			c.flatten
 		end
-		
-		#def self.find_lib(name, options: Options.new)
-		#	options = options.deep_clone
-		#	options.optimize = :none
-		#	options.args << '-t'
-		#	
-		#	
-		#	if options.static # The default way is best for static linking.
-		#		return Linker.find_lib(name, options: options)
-		#	end
-		#	
-		#	pp c = do_link([], [name], File::NULL, options: options)
-		#	
-		#	c.success? or return nil
-		#	
-		#	c.stdout.match(Regexp.new"^-l#{name} \\((.*)\\)$") do |m|
-		#		m[1]
-		#	end
-		#end
 	end
 	L::LD.linkers[:clang] = LinkerClang
 end

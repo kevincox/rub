@@ -58,9 +58,20 @@ module C
 	
 	# Get a consistant hash of an object.
 	def self.chash(o)
+		if o.is_a? Array
+			return o.map{|i| chash i}.join
+		end
+		
 		# Super hacky, strip out object-ids, because they change every
 		# invocation, but use inspect.  It works alright.
-		o.inspect.gsub(/(?<!:):0x[0-9a-f]*/, '')
+		r = o.inspect.gsub(/(?<!:):0x[0-9a-f]*/, '')
+		
+		# Modules don't print themselfs meaningfully.
+		if o.is_a? Module
+			r << o.pretty_print_instance_variables.map{|k| [k, o.instance_variable_get(k)] }.inspect
+		end
+	
+		r	
 	end
 	
 	# Create a probably unique path segment.
@@ -70,7 +81,7 @@ module C
 	# @param seed [Object] A value to use for the folder name, keeping this the
 	#                      same across invocations allows predictable names,
 	#                      preventing unnecessary rebuilds.
-	def self.unique_segment(seed=nil)
+	def self.unique_segment(*seed)
 		seed ||= caller_locations(1,1)
 		
 		return Digest::SHA1.hexdigest(chash(seed))
@@ -84,7 +95,7 @@ module C
 	# @param seed [Object] A value to use for the folder name, keeping this the
 	#                      same across invocations allows predictable names,
 	#                      preventing unnecessary rebuilds.
-	def self.unique_path(base, seed=nil)
+	def self.unique_path(base, seed)
 		R::Env.out_dir + 'c/unique/' + unique_segment(seed) + base
 	end
 	

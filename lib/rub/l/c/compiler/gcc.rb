@@ -57,16 +57,16 @@ module L::C::CompilerGCC
 		:size=>'-Os',
 	}
 	
-	def self.generate_flags(options)
+	def self.generate_flags(opt)
 		f = []
 		
-		f << (@@o_flags[options.optimize    ] || [])
-		f << (@@o_flags[options.optimize_for] || [])
+		f << (@@o_flags[opt.optimize    ] || [])
+		f << (@@o_flags[opt.optimize_for] || [])
 		
-		f << options.include_dirs.map do |d|
+		f << opt.include_dirs.map do |d|
 			"-I#{d}"
 		end
-		f << options.define.map do |k, v|
+		f << opt.define.map do |k, v|
 			if v
 				# -Dk if v is true else -Dk=v.
 				"-D#{k}#{v.eql?(true)?"":"=#{v}"}"
@@ -78,12 +78,12 @@ module L::C::CompilerGCC
 		f.flatten!
 	end
 	
-	def self.compile_command(src, obj, options)
-		[find, '-c', *generate_flags(options), "-o#{obj}", *src]
+	def self.compile_command(opt, src, obj)
+		[find, '-c', *generate_flags(opt), "-o#{obj}", *src]
 	end
 	
-	def self.do_compile_string(str, obj, options)
-		c = R::Command.new [find, '-c', '-xc', *generate_flags(options), '-o', obj, '-']
+	def self.do_compile_string(opt, str, obj)
+		c = R::Command.new [find, '-c', '-xc', *generate_flags(opt), '-o', obj, '-']
 		c.stdin = str
 		c.run
 		c
