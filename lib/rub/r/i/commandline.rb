@@ -27,7 +27,7 @@ require 'getoptlong'
 # Command line parsing and handling.
 module R::I::CommandLine
 	help = lambda do
-				puts <<"EOS"
+				puts <<EOS
 #{R::Version.info_string}
 
 Usage: #{$0} [options] [target...]
@@ -37,7 +37,7 @@ Specify the targets to build.  If none are specified ':all' is assumed.
 
 Options:
 -o --out <dir>
-  Sets the Rub build directory.  This defaults to 'build:'.  This is
+  Sets the Rub build directory.  This defaults to 'build/'.  This is
   merely a scratch location and none of the files in this directory should
   be used outside of Rub.  You may want to put this on fast storage (maybe
   in RAM) to speed up complex builds.

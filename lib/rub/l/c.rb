@@ -38,7 +38,10 @@ module L::C
 	#
 	# @return (see compiler)
 	# @see compiler
-	cattr_accessor :compiler
+	cattr_reader :compiler
+	def self.compiler=(name)
+		@compiler = get_compiler name
+	end
 	
 	# @!scope class
 	# Default optimization level.
@@ -105,7 +108,7 @@ module L::C
 	cattr_accessor :libs
 	
 	# @!scope class
-	# A list of macros to define.  nil can be used to undefine a macro.
+	# A list of macros to define.  `nil` can be used to undefine a macro.
 	#
 	# @return [Hash{String=>String,true,nil}]
 	cattr_accessor :define
@@ -146,9 +149,8 @@ module L::C
 		
 		# Compile source files.
 		#
-		# @param src     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
-		#                The source files to link and generated headers.
-		# @param obj     [Pathname,String] The path of the output file.
+		# @param src [Set<Pathname>] The source files to link and generated headers.
+		# @param obj [Pathname] The path of the output file.
 		# @param opt [Options] An options object.
 		# @return [Pathname] The output file.
 		def self.compile_command(opt, src, obj)
@@ -167,9 +169,8 @@ module L::C
 		
 		# Compile a string.
 		#
-		# @param str     [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
-		#                A string containing the complete source to compile.
-		# @param obj     [Pathname,String] The path of the output file.
+		# @param str [String] A string containing the complete source to compile.
+		# @param obj [Pathname] The path of the output file.
 		# @param opt [Options] An options object.
 		# @return [R::Command] the process that compiled the string.
 		def self.do_compile_string(opt, str, obj)
@@ -232,8 +233,12 @@ EOF
 		end
 	end
 	
-	def get_compiler(name)
-		compilers[name]
+	def self.get_compiler(name)
+		if name.is_a? Symbol
+			compilers[name]
+		else
+			name
+		end
 	end
 	
 	R::Tool.load_dir(Pathname.new(__FILE__).realpath.dirname+"c/compiler/")

@@ -30,7 +30,9 @@ module C
 	#
 	# @return [Pathname]
 	def self.path(p)
-		p.is_a? Symbol and return p
+		p.is_a? Symbol   and return p
+		p.is_a? Pathname and return p.expand_path
+		p = p.to_s
 		
 		#p = case p[0]
 		#	when '!'

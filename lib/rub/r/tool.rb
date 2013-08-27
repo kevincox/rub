@@ -22,8 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'set'
-require 'pathname'
+require 'valid-array'
 
 class Module
 	# Class attribute reader.
@@ -148,5 +147,13 @@ module R::Tool
 		d = C.path(d)
 		
 		d.children.each {|i| load i}
+	end
+	
+	class PathArray < Array
+		extend ValidArray
+		
+		def _ensure_item_is_allowed(item, expected=nil)
+			C.path item
+		end
 	end
 end
