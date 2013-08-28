@@ -22,7 +22,7 @@
 #                                                                              #
 ################################################################################
 
-require 'valid-array'
+require 'valid_array'
 
 class Module
 	# Class attribute reader.
