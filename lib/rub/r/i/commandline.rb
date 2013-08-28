@@ -84,6 +84,9 @@ Options:
   Print lots of information about the code you are running.
 --version-version-commit
   Print the version, and if not a release commit, the current commit.
+--library-directory
+  Print the directory to which libraries should be installed to become available
+  from L.
 -h, --help
   Print this help text and exit.
 EOS

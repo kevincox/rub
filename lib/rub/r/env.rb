@@ -52,11 +52,14 @@ module R::Env
 	end
 	private_class_method :find_src_dir
 	
-	
+	# The path in which L::* libraries go in.
 	def self.lib_dir
 		Pathname.new(__FILE__).realpath.dirname + '../l/'
 	end
 	
+	# The path that Rub was installed in.
+	#
+	# For example if Rub was installed system wide it may be '/usr/'.
 	def self.ins_dir
 		lib_dir + '../../../'
 	end
