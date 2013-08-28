@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
 	s.authors     = ['Kevin Cox']
 	s.email       = 'kevincox@kevincox.ca'
 	s.files       = Dir['lib/**/*.rb']
+	s.executables << 'rub.rb'
 	s.homepage    = 'https://github.com/kevincox/rub'
 	s.license     = 'zlib'
 	
