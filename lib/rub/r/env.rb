@@ -51,6 +51,15 @@ module R::Env
 		d.parent + (d.basename.to_s+'/') # Ensure this ends in a '/'
 	end
 	private_class_method :find_src_dir
+	
+	
+	def self.lib_dir
+		Pathname.new(__FILE__).realpath.dirname + '../l/'
+	end
+	
+	def self.ins_dir
+		lib_dir + '../../../'
+	end
 
 	# @return [Pathname] The directory from which rub was executed.
 	def self.src_dir

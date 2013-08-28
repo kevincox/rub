@@ -110,6 +110,8 @@ EOS
 		['--version-describe',                  GetoptLong::NO_ARGUMENT       ],
 		['--version-verbose',                   GetoptLong::NO_ARGUMENT       ],
 		['--version-version-commit',            GetoptLong::NO_ARGUMENT       ],
+		['--install-directory',                 GetoptLong::NO_ARGUMENT       ],
+		['--library-directory',                 GetoptLong::NO_ARGUMENT       ],
 	)
 	
 	scripts = [];
@@ -167,6 +169,12 @@ EOS
 				exit 0
 			when '--version-version-commit'
 				puts R::Version.version_commit
+				exit 0
+			when '--install-directory'
+				puts R::Env.ins_dir
+				exit 0
+			when '--library-directory'
+				puts R::Env.lib_dir
 				exit 0
 		end
 	end
