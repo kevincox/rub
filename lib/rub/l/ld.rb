@@ -56,6 +56,7 @@ module L::LD
 	#
 	# @return [Symbol]
 	cattr_accessor :optimize
+	@optimize = D[:debug] ? :none : :full
 	
 	# @!scope class
 	# A list of library search directories to be added to the default search
@@ -65,6 +66,7 @@ module L::LD
 	#
 	# @return [Array<Pathname>]
 	cattr_accessor :library_dirs
+	@library_dirs = []
 	
 	# @!scope class
 	# The default for static linking.
@@ -73,6 +75,7 @@ module L::LD
 	#
 	# @return [true,false]
 	cattr_accessor :static
+	@static = false
 	
 	# @!scope class
 	# Default arguments to add to the linker command.
@@ -83,10 +86,6 @@ module L::LD
 	#
 	# @return [Array<String>] A list of arguments to add.
 	cattr_accessor :args
-	
-	@optimize = D[:debug] ? :none : :full
-	@library_dirs = []
-	@static = false
 	@args = []
 	
 	def self.set_linker(name)
@@ -165,20 +164,32 @@ module L::LD
 			c.success?
 		end
 		
-		@@name_map = {
-			exe:    '%s',
-			shared: 'lib%s.so',
-			static: 'lib%s.a',
-		}
-		
 		# Generate an appropriate name.
 		#
 		# @param base [String] The basename.
 		# @param type [Symbol] The output format.
 		# @return [String] A suitable name for the output type on the
 		#                  current machine.
-		def self.full_name(base, type)
-			@@name_map[type] % base
+		def self.full_name(base, type, ver=nil)
+			#@TODO: Other system names.
+			case type
+			when :exe
+				base
+			when :shared
+				if ver
+					"lib#{base}.so.#{ver}"
+				else
+					"lib#{base}.so"
+				end
+			when :static
+				if ver
+					"lib#{base}.a.#{ver}"
+				else
+					"lib#{base}.a"
+				end
+			else
+				raise "Unknown type #{type}"
+			end
 		end
 		
 		# Locate a library.
@@ -232,16 +243,16 @@ module L::LD
 	#                [+:shared+] A shared library.
 	# @param linker  [Symbol] The linker to use.  If nil, use the default.
 	# @return [Pathname] The output file.
-	def self.link(src, libs, name, format: :exe)
+	def self.link(src, libs, name, format: :exe, ver: nil)
 		src  = R::Tool.make_set_paths src
 		libs = R::Tool.make_set libs
 		
 		libfs = libs.map {|l| linker.find_lib(self, l) or raise "Can't find library #{l}."}
 		
-		out = linker.full_name name, format
+		out = linker.full_name name, format, ver
 		out = R::Env.out_dir + 'l/ld/' + C.unique_segment(src, libs, self) + out
 		
-		C::generator(src+libfs, linker.link_command(self, src, libs, out, format), out)
+		C::generator(src+libfs, linker.link_command(self, src, libs, out, format, name, ver), out)
 		
 		out
 	end

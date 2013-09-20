@@ -56,12 +56,23 @@ module L::C::CompilerGCC
 		:speed=>'-Ofast',
 		:size=>'-Os',
 	}
+	@@warn_flags = {
+		true =>['-Wall'],
+		false=>['-w'],
+		:most=>['-Wall', '-Wextra'],
+		:all =>['-Wall', '-Wextra'],
+	}
 	
 	def self.generate_flags(opt)
 		f = []
 		
-		f << (@@o_flags[opt.optimize    ] || [])
-		f << (@@o_flags[opt.optimize_for] || [])
+		f << @@warn_flags[opt.warn]
+		f << '-Werror' if opt.warn_fatal
+		
+		f << @@o_flags[opt.optimize    ]
+		f << @@o_flags[opt.optimize_for]
+		
+		f << '-fPIC' if opt.pic
 		
 		f << opt.include_dirs.map do |d|
 			"-I#{d}"
@@ -76,6 +87,7 @@ module L::C::CompilerGCC
 		end
 		
 		f.flatten!
+		f.compact!
 	end
 	
 	def self.compile_command(opt, src, obj)

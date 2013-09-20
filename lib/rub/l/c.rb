@@ -26,7 +26,6 @@ require 'tempfile'
 
 # C Library
 module L::C
-	# @!scope class
 	# All available compilers.
 	# @return [Hash{Symbol=>Compiler}]
 	cattr_accessor :compilers
@@ -43,7 +42,14 @@ module L::C
 		@compiler = get_compiler name
 	end
 	
-	# @!scope class
+	# Default debug symbols setting.
+	#
+	# This determines if the compiler should produce debugging symbols.
+	#
+	# @return [true,false]
+	cattr_accessor :debug
+	@debug = !!D[:debug]
+	
 	# Default optimization level.
 	#
 	# This takes one of four optimization levels.  The actual optimization
@@ -62,8 +68,8 @@ module L::C
 	#
 	# @return [Symbol]
 	cattr_accessor :optimize
+	@optimize = @debug ? :none : :full
 	
-	# @!scope class
 	# Default optimization goal.
 	#
 	# This determines what the compiler should optimize for if it has the
@@ -76,15 +82,6 @@ module L::C
 	# @return [Symbol]
 	cattr_accessor :optimize_for
 	
-	# @!scope class
-	# Default debug symbols setting.
-	#
-	# This determines if the compiler should produce debugging symbols.
-	#
-	# @return [true,false]
-	cattr_accessor :debug
-	
-	# @!scope class
 	# Default profile symbols setting.
 	#
 	# This determines if the compiler should produce code suitable for
@@ -92,35 +89,49 @@ module L::C
 	#
 	# @return [true,false]
 	cattr_accessor :profile
+	@profile = @debug
 
-	# @!scope class
 	# A list of directories to search for header files.
 	#
 	# These paths are searched in order.
 	#
 	# @return [Array<Pathname>]
 	cattr_accessor :include_dirs
-
-	# @!scope class
+	@include_dirs = R::Tool::PathArray.new
+	
 	# A list of libraries to link.
 	#
 	# @return [Array<String,Pathname>]
 	cattr_accessor :libs
+	@libs = L::LD::LibraryArray.new
 	
-	# @!scope class
 	# A list of macros to define.  `nil` can be used to undefine a macro.
 	#
 	# @return [Hash{String=>String,true,nil}]
 	cattr_accessor :define
-	
-	@debug = @profile = !!D[:debug]
-	@optimize = @debug ? :none : :full
-	
-	@include_dirs = R::Tool::PathArray.new
-	@libs         = L::LD::LibraryArray.new
 	@define = {
 		@debug ? 'DEBUG' : 'NDEBUG' => true,
 	}
+	
+	# What warnings to emit.
+	#
+	# Valid values:
+	# - nil Compiler default.
+	# - true Display basic warnings.
+	# - false Disable warnings.
+	# - :most Display most warnings.
+	# - :all Display all available warnings.
+	cattr_accessor :warn
+	
+	# Die on warning.
+	#
+	# Die on any warning, if supported by the compiler.
+	cattr_accessor :warn_fatal
+	@warn_fatal = false
+	
+	# Generate position independent code.
+	cattr_accessor :pic
+	@pic = false
 	
 	# An Abstraction over different compilers.
 	module Compiler
@@ -464,6 +475,22 @@ EOS
 		
 		linker.set_linker compiler.linker
 		linker.link(obj, libs, name, format: :exe)
+	end
+	
+	# Compile and link a shared library.
+	#
+	# @param src      [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
+	#                 The source files to compile and generated headers.
+	# @param name     [Pathname,String] The basename of the output file.
+	# @return [Pathname] The resulting executable.
+	def self.shared(src, name, version=nil)
+		scplr = L::C.clone
+		scplr.pic = true
+		obj = scplr.compile(src)
+		
+		linker = L::LD.clone
+		linker.set_linker compiler.linker
+		linker.link(obj, libs, name, format: :shared, ver: version)
 	end
 	
 	def self.initialize_copy(s)
