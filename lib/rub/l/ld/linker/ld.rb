@@ -39,7 +39,7 @@ module L::LD
 			C.find_command 'ld'
 		end
 		
-		def self.link_command(opt, files, libs, out, format, ver)
+		def self.link_command(opt, files, libs, out, format, name, ver)
 			files = R::Tool.make_set_paths files
 			libs  = R::Tool.make_set libs
 			out = C.path out
@@ -52,7 +52,10 @@ module L::LD
 				when :exe
 					[]
 				when :shared
-					['-shared']
+					[
+						'-shared',
+						"-Wl,-soname,lib#{name}.so#{ver&&".#{ver.partition('.')[0]}"}",
+					]
 				else
 					raise "Unknown/unsupported output #{format}."
 			end

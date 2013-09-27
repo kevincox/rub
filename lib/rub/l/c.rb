@@ -218,11 +218,11 @@ module L::C
 		# @param name [String] macro identifier.
 		# @return [true,false] true if the macro is defined.
 		def self.test_macro(opt, name)
-			test_compile_string opt, <<EOF
-#ifndef #{name}
-#error "#{name}Not Defined"
-#endif
-EOF
+			test_compile_string opt, <<-EOF.gsub(/^\s+/, '')
+				#ifndef #{name}
+				#error "#{name}Not Defined"
+				#endif
+			EOF
 		end
 		
 		def self.include_directories(opt)
