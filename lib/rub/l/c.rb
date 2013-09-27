@@ -482,6 +482,8 @@ EOS
 	# @param src      [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
 	#                 The source files to compile and generated headers.
 	# @param name     [Pathname,String] The basename of the output file.
+	# @param version  The version of the library.  The major version will be
+	#                 used for the soname.
 	# @return [Pathname] The resulting executable.
 	def self.shared(src, name, version=nil)
 		scplr = L::C.clone

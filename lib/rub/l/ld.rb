@@ -241,7 +241,7 @@ module L::LD
 	#                One of:
 	#                [+:exe+]    An executable binary.
 	#                [+:shared+] A shared library.
-	# @param linker  [Symbol] The linker to use.  If nil, use the default.
+	# @param ver     The version of the library, if a library is being created.
 	# @return [Pathname] The output file.
 	def self.link(src, libs, name, format: :exe, ver: nil)
 		src  = R::Tool.make_set_paths src
