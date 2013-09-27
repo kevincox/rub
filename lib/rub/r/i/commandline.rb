@@ -119,6 +119,7 @@ EOS
 	
 	scripts = [];
 	sysscripts = XDG[:config].paths.map do |d|
+		pp d
 		[:file, d+'rub/config.rub']
 	end.keep_if { |t, n| n.exist? }
 	

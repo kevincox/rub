@@ -132,7 +132,9 @@ module D
 			v = true
 		end
 		
-		@@map[k].is_a?(Array) or @@map[k] = []
+		@@map[k].is_a?(Array) or (
+			@@map[k] = ( @@map[k].nil? ? [] : [@@map[k]] )
+		)
 		
 		@@map[k].push(v)
 	end
@@ -179,7 +181,9 @@ module D
 			v = true
 		end
 		
-		@@map[k].is_a?(Array) or @@map[k] = []
+		@@map[k].is_a?(Array) or (
+			@@map[k] = ( @@map[k].nil? ? [] : [@@map[k]] )
+		)
 		
 		@@map[k].unshift(v)
 	end
