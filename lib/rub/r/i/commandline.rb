@@ -87,6 +87,9 @@ Options:
 --library-directory
   Print the directory to which libraries should be installed to become available
   from L.
+--dump-defines
+  After parsing configuration files and command line options, dump the values
+  of all the definitions.
 -h, --help
   Print this help text and exit.
 EOS
@@ -115,11 +118,13 @@ EOS
 		['--version-version-commit',            GetoptLong::NO_ARGUMENT       ],
 		['--install-directory',                 GetoptLong::NO_ARGUMENT       ],
 		['--library-directory',                 GetoptLong::NO_ARGUMENT       ],
+		['--dump-defines',                      GetoptLong::NO_ARGUMENT       ],
 	)
+	
+	action = :none
 	
 	scripts = [];
 	sysscripts = XDG[:config].paths.map do |d|
-		pp d
 		[:file, d+'rub/config.rub']
 	end.keep_if { |t, n| n.exist? }
 	
@@ -180,6 +185,8 @@ EOS
 			when '--library-directory'
 				puts R::Env.lib_dir
 				exit 0
+			when '--dump-defines'
+				action = :dumpdefines
 		end
 	end
 	
@@ -199,6 +206,12 @@ EOS
 			when :prepend
 				D.prepend(a)
 		end
+	end
+	
+	case action
+	when :dumpdefines
+		pp D.map
+		exit 0
 	end
 end
 
