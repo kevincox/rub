@@ -66,6 +66,9 @@ module L::C::CompilerGCC
 	def self.generate_flags(opt)
 		f = []
 		
+		f << '-g' if opt.debug
+		f << '-p' if opt.profile
+		
 		f << @@warn_flags[opt.warn]
 		f << '-Werror' if opt.warn_fatal
 		
