@@ -73,14 +73,14 @@ end
 # picked up and have tags created for them.
 #
 # When defining the test class there will be an additional method
-# {Minitest::Runnable#rub_add_dependency} that will allow the test to depend
+# {Minitest::Runnable#rub_require} that will allow the test to depend
 # on any target.  Therefore you can ensure that what you are testing has been
 # built.
 #
 # @example Defining dependencies.
 #
-#   Minitest::Test
-#   	rub_add_dependancy $myexe # Ensure $myexe will be available when test are run.
+#   class TestPath < Minitest::Test
+#   	rub_require $myexe # Ensure $myexe will be available when test are run.
 #   	
 #   	def test_help
 #   		c = R::Command.new [$myexe, '--help']
