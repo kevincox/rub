@@ -178,7 +178,7 @@ module L::Test
 		
 			options = {
 				io:      out,
-				verbose: true
+				verbose: true,
 			}
 
 			reporter = Minitest::CompositeReporter.new
