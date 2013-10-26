@@ -66,6 +66,8 @@ module L::C::CompilerGCC
 	def self.generate_flags(opt)
 		f = []
 		
+		f << opt.flags
+		
 		f << '-g' if opt.debug
 		f << '-p' if opt.profile
 		

@@ -67,6 +67,8 @@ module L::C::CompilerClang
 		
 		#f << '-emit-llvm'
 		
+		f << opt.flags
+		
 		f << '-g' if opt.debug
 		f << '-p' if opt.profile
 		

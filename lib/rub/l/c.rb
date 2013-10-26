@@ -113,6 +113,13 @@ module L::C
 		@debug ? 'DEBUG' : 'NDEBUG' => true,
 	}
 	
+	# A list of arguments to pass to the compiler.
+	# 
+	# WARNING: This makes your build description compiler-specific.  Only use
+	# this if the provided options are not sufficent.
+	cattr_accessor :flags
+	@flags = []
+	
 	# What warnings to emit.
 	#
 	# Valid values:
