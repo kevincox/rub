@@ -7,6 +7,8 @@ For the official documentation see the
 
 	git clone https://github.com/kevincox/rub.wiki.git
 
+We track our issues in [Launchpad](https://launchpad.net/rub).
+
 Rub is designed to provide a simple framework for writing build scripts and
 libraries to be used by those build scripts.  Rub does not offer any language
 specific tools but instead libraries for every language.  These libraries
