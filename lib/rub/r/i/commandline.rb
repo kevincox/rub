@@ -27,7 +27,7 @@ require 'getoptlong'
 # Command line parsing and handling.
 module R::I::CommandLine
 	help = lambda do
-				puts <<EOS
+		puts <<EOS
 #{R::Version.info_string}
 
 Usage: #{$0} [options] [target...]

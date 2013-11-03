@@ -63,7 +63,7 @@ module R::Env
 	def self.ins_dir
 		lib_dir + '../../../'
 	end
-
+	
 	# @return [Pathname] The directory from which rub was executed.
 	def self.src_dir
 		@src_dir ||= find_src_dir
