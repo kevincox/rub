@@ -86,12 +86,12 @@ module L::LD
 	#
 	# @return [Array<String>] A list of arguments to add.
 	cattr_accessor :args
-	@args = []
+	@args = D[:ld_flags] || []
 	
 	def self.set_linker(name)
 		self.linker = linkers[name]
 	end
-
+	
 	# An abstraction for a linker.
 	module Linker
 		# The name of the linker.

@@ -85,7 +85,9 @@ module L::LD
 			c << libs.map{|l| "#{l}" }
 			c << files.to_a
 			
-			c.flatten
+			c.flatten!
+			c.compact!
+			c
 		end
 	end
 	L::LD.linkers[:ld] = LinkerLD

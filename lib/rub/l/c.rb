@@ -30,7 +30,7 @@ module L::C
 	# @return [Hash{Symbol=>Compiler}]
 	cattr_accessor :compilers
 	@compilers = {}
-
+	
 	# Compiler
 	#
 	# The compiler to use.
@@ -118,7 +118,7 @@ module L::C
 	# WARNING: This makes your build description compiler-specific.  Only use
 	# this if the provided options are not sufficent.
 	cattr_accessor :flags
-	@flags = []
+	@flags = D[:c_flags] || []
 	
 	# What warnings to emit.
 	#

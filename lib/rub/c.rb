@@ -72,8 +72,8 @@ module C
 		if o.is_a? Module
 			r << o.pretty_print_instance_variables.map{|k| [k, o.instance_variable_get(k)] }.inspect
 		end
-	
-		r	
+		
+		r
 	end
 	
 	# Create a probably unique path segment.
