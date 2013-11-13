@@ -219,8 +219,8 @@ module L::LD
 		l.available? or next false
 	end
 	
-	D[:l_ld_linker].map! {|l| l.to_sym}
-	@linker = D[:l_ld_linker].find {|l| @linkers.has_key? l}
+	D[:ld_linker].map! {|l| l.to_sym}
+	@linker = D[:ld_linker].find {|l| @linkers.has_key? l}
 	@linker = @linkers[@linker]
 	
 	class LibraryArray < Array

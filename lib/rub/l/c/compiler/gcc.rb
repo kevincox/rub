@@ -108,4 +108,4 @@ module L::C::CompilerGCC
 end
 
 L::C.compilers[:gcc] = L::C::CompilerGCC
-D.append(:l_c_compiler, :gcc)
+D.append(:c_compiler, :gcc)

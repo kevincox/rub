@@ -108,4 +108,4 @@ module L::C::CompilerClang
 	end
 end
 L::C.compilers[:clang] = L::C::CompilerClang
-D.append(:l_c_compiler, :clang)
+D.append(:c_compiler, :clang)

@@ -90,7 +90,7 @@ module L::C
 	# @return [true,false]
 	cattr_accessor :profile
 	@profile = @debug
-
+	
 	# A list of directories to search for header files.
 	#
 	# These paths are searched in order.
@@ -277,8 +277,8 @@ module L::C
 		r
 	end
 	
-	D[:l_c_compiler].map! {|c| c.to_sym}
-	@compiler = compilers[ D[:l_c_compiler].find{|c| compilers.has_key? c} ]
+	D[:c_compiler].map! {|c| c.to_sym}
+	@compiler = compilers[ D[:c_compiler].find{|c| compilers.has_key? c} ]
 	
 	# Compile source files.
 	#
@@ -327,7 +327,7 @@ module L::C
 			set << @f
 			@incs ||= @f.readlines.map do |l|
 				l =~ /\s*#\s*include\s*("(.*)"|<(.*)>)/ or next
-				if $3 and !D[:l_c_system_headers]
+				if $3 and !D[:c_system_headers]
 					next
 				end
 				

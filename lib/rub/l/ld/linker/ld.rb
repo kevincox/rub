@@ -90,5 +90,5 @@ module L::LD
 	end
 	L::LD.linkers[:ld] = LinkerLD
 	
-	D.append(:l_ld_linker, :ld)
+	D.append(:ld_linker, :ld)
 end

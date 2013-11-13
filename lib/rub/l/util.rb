@@ -24,7 +24,7 @@
 
 require 'singleton'
 
-D.resolve_path :pefix
+D.resolve_path :prefix, "/usr/local/"
 
 # General purpose build tools.
 module L::Util
