@@ -211,6 +211,8 @@ module L::LD
 				
 				l.exist? and return l
 			end
+			
+			nil
 		end
 	end
 	

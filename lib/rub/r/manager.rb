@@ -1,5 +1,3 @@
-#! /usr/bin/env ruby
-
 # Copyright 2013 Kevin Cox
 
 ################################################################################
@@ -24,69 +22,22 @@
 #                                                                              #
 ################################################################################
 
-##### These libraries are guaranteed to be loaded.
-require 'pathname'
-require 'set'
-require 'pp'
-require 'digest/sha1'
-
-require 'sysexits'
-require 'facter'
-require 'xdg'
-
-# This is first so we modify all of our classes.
-'
-class Object
-	def self.method_added name
-		return if name == :initialize
-		return if @__last_methods_added && @__last_methods_added.include?(name)
+module R::Manager
+	D[:r_jobs] ||= Facter.processorcount + 1
+	puts "Using #{D:jobs} simultaneous jobs."
+	
+	@@res = {}
+	
+	@@todo  = []
+	@@todom = Monitor.new
+	@@more = @todom.new_cond
+	
+	def self.request(targets)
+		t = R::Tool::make_set_paths targets
 		
-		with = :"#{name}_with_before_each_method"
-		without = :"#{name}_without_before_each_method"
-		
-		@__last_methods_added = [name, with, without]
-		define_method with do |*args, &block|
-			puts "#{self.class}##{name}"
-			pp args, &block
-			puts "calling..."
+		@@mtx.syncronized do
 			
-			r = send without, *args, &block
-			
-			puts "#{self.class}##{name} returned"
-			
-			r
 		end
-		alias_method without, name
-		alias_method name, with
-		@__last_methods_added = nil
 	end
+	
 end
-#'
-
-##### Load the namespaces.
-require_relative 'd'
-require_relative 'r'
-require_relative 'l'
-require_relative 'c'
-
-# Odd jobs.
-require_relative 'dirs'
-require_relative 'help'
-
-##### Add the first two scripts.
-R::I::Runner.do_file(R::Env.src_dir+"root.rub")
-R::I::Runner.do_file(R::Env.cmd_dir+"dir.rub")
-
-##### Add default target if necessary.
-ARGV.empty? and ARGV << ':all'
-
-##### Build requested targets.
-ARGV.each do |t|
-	t = if t =~ /^:[^\/]*$/ # Is a tag.
-		t[1..-1].to_sym
-	else
-		C.path(t)
-	end
-	R::get_target(t).build
-end
-
