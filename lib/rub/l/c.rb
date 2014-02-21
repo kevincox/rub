@@ -118,7 +118,7 @@ module L::C
 	# WARNING: This makes your build description compiler-specific.  Only use
 	# this if the provided options are not sufficent.
 	cattr_accessor :flags
-	@flags = D[:c_flags] || []
+	@flags = R::Tool.make_array(D[:c_flags]) || []
 	
 	# What warnings to emit.
 	#
