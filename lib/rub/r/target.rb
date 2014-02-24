@@ -128,7 +128,7 @@ module R
 		#
 		# @return [String] the hash.
 		def hash_input
-			Digest::SHA1.digest(
+			C.hash(
 				(
 					input.map{|i| R::get_target(i).hash_output(i) }
 				).join
@@ -137,26 +137,20 @@ module R
 		
 		@@symbolcounter = rand(2**32) # Shouldn't repeat very often.
 		def hash_output(t)
-			puts t
-			if t.to_s.end_with? "Object.hpp"
-				pp 'OBJECT!!!'
-				pp Digest::SHA1.file(t).to_s
-			end
-			
 			if t.is_a? Symbol
 				@@symbolcounter++
 				"symbol-#{@@symbolcounter.to_s(16)}" # Never clean.
 			else
-				Digest::SHA1.file(t).to_s
+				C.hash_file t
 			end
 		end
 		
 		def hash_outputs(t = output)
-			Digest::SHA1.digest(t.map{|o| hash_output(o)}.join)
+			C.hash(t.map{|o| hash_output(o)}.join)
 		end
 		
 		def hash_self
-			Digest::SHA1.digest(hash_input+hash_outputs)
+			C.hash(hash_input+hash_outputs)
 		end
 		
 		# Build the inputs.
@@ -189,6 +183,11 @@ module R
 			
 			nil
 		end
+		
+		# Invalidate caches.
+		# 
+		# This is called when the inputs have changed, you should check it
+		# again.
 	end
 	
 	# Target with additional functionality.
@@ -242,7 +241,7 @@ module R
 		end
 		
 		def hash_output(f)
-			@hashcache ||= Digest::SHA1.file(f).to_s
+			@hashcache ||= C.hash_file f
 		end
 		
 		def build

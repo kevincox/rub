@@ -62,6 +62,12 @@ module C
 		Digest::SHA1.digest(s)
 	end
 	
+	def self.hash_file(f)
+		#$stderr.puts "Hashing #{f}."
+		#puts caller
+		Digest::SHA1.file(f).to_s
+	end
+	
 	# Get a consistant hash of an object.
 	def self.chash(o)
 		if o.is_a? Array

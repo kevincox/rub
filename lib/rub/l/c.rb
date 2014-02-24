@@ -374,7 +374,7 @@ module L::C
 		end
 		
 		def hash_output(f)
-			C.hash([super, *input.map do |f| # Include files are effectively us.
+			C.hash(input.map do |f| # Include files are effectively us.
 				t = R.find_target f
 				
 				if t.respond_to? :hash_only_self
@@ -382,11 +382,11 @@ module L::C
 				else
 					t.hash_output t
 				end
-			end].join('\0'))
+			end.join('\0'))
 		end
 		
 		def hash_only_self
-			Digest::SHA1.file(@f).to_s
+			@hashcache ||= C.hash_file @f
 		end
 		
 		def build
