@@ -67,7 +67,8 @@ module R
 		end
 		
 		def hash_input
-			super + Digest::SHA1.digest(
+			Digest::SHA1.digest(
+				super +
 				@cmd.join("\0")
 			)
 		end

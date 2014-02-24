@@ -58,6 +58,10 @@ module C
 		Set.new Dir.glob(glob).map{|e| C.path(e) }
 	end
 	
+	def self.hash(s)
+		Digest::SHA1.digest(s)
+	end
+	
 	# Get a consistant hash of an object.
 	def self.chash(o)
 		if o.is_a? Array

@@ -135,8 +135,14 @@ module R
 			)
 		end
 		
-		@@symbolcounter = rand(2**160) # Shouldn't repeat very often.
+		@@symbolcounter = rand(2**32) # Shouldn't repeat very often.
 		def hash_output(t)
+			puts t
+			if t.to_s.end_with? "Object.hpp"
+				pp 'OBJECT!!!'
+				pp Digest::SHA1.file(t).to_s
+			end
+			
 			if t.is_a? Symbol
 				@@symbolcounter++
 				"symbol-#{@@symbolcounter.to_s(16)}" # Never clean.
@@ -188,7 +194,7 @@ module R
 	# Target with additional functionality.
 	class TargetSmart < Target
 		attr_reader :input, :output
-	
+		
 		def initialize
 			@input  = Set.new
 			@output = Set.new
@@ -200,7 +206,7 @@ module R
 		def clean
 			output.all?{|f| !f.is_a?(Symbol) and f.exist?} or return
 			
-			 R::ppersistant["Rub.TargetSmart.#{@output.sort.join('\0')}"] = hash_self
+			R::ppersistant["Rub.TargetSmart.#{@output.sort.join('\0')}"] = hash_self
 		end
 		
 		# Is this target clean?

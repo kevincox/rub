@@ -298,10 +298,11 @@ module L::C
 				true
 			end
 		end
-	
+		
 		src.map! do |s|
 			out = R::Env.out_dir + 'l/c/' + C.unique_segment(self) + "#{s.basename}.o"
 			
+			pp R.find_target(s)
 			R.find_target(s) or TargetCSource.new(self, s, headers)
 			::C.generator(s, compiler.compile_command(self, s, out), out, desc:"Compiling")
 		end
@@ -311,7 +312,7 @@ module L::C
 	
 	# A C source file.
 	class TargetCSource < R::Target
-		def initialize(opt, f, input = [])
+		def initialize(opt, f, input = Set.new)
 			#TargetC.initialize
 			
 			@f = C.path(f)
@@ -322,8 +323,8 @@ module L::C
 		end
 		
 		def included_files(opt, set=Set.new)
-			set.include?(@f) and return
-		
+			set.include?(@f) and return set
+			
 			set << @f
 			@incs ||= @f.readlines.map do |l|
 				l =~ /\s*#\s*include\s*("(.*)"|<(.*)>)/ or next
@@ -352,7 +353,7 @@ module L::C
 			end.compact
 			
 			@incs.each do |h|
-				icd = R::find_target(h) || TargetCSource.new(opt, h, @input)
+				icd = R::find_target(h) || TargetCSource.new(opt, h)
 				
 				if icd.respond_to? :included_files
 					icd.included_files opt, set
@@ -360,6 +361,8 @@ module L::C
 					set << h
 				end
 			end
+			
+			return set
 		end
 		
 		def input
@@ -370,9 +373,25 @@ module L::C
 			Set[@f]
 		end
 		
+		def hash_output(f)
+			C.hash([super, *input.map do |f| # Include files are effectively us.
+				t = R.find_target f
+				
+				if t.respond_to? :hash_only_self
+					t.hash_only_self
+				else
+					t.hash_output t
+				end
+			end].join('\0'))
+		end
+		
+		def hash_only_self
+			Digest::SHA1.file(@f).to_s
+		end
+		
 		def build
 			@depsbuilt and return
-		
+			
 			@depsbuilt = true
 			build_dependancies
 		end
