@@ -38,7 +38,7 @@ class R::Command
 	#   
 	#   @return [Hash{String=>String,nil}] The environment variables.
 	attr_reader   :env
-
+	
 	# @!attribute [rw] stdin
 	#   @return [String] The string to use as input to the command.
 	attr_accessor :stdin
@@ -90,7 +90,7 @@ class R::Command
 	#       times but it must finish before being run again.
 	def start
 		@status = nil
-	
+		
 		@stdinr,  @stdinw  = IO.pipe
 		@stdoutr, @stdoutw = IO.pipe
 		@stderrr, @stderrw = IO.pipe
@@ -176,7 +176,7 @@ end
 # @return [true,false] true if the command was successful.
 def R.run(cmd, desc, importance: :med)
 	cmd = cmd.dup
-
+	
 	bs = R::BuildStep.new
 	bs.desc = desc
 	bs.cmd  = cmd
@@ -277,7 +277,7 @@ class R::BuildStep
 	# Print the result.
 	def print
 		@importancei < 2 and return
-	
+		
 		puts "\e[#{status==0 ? '' : '31;'}1m#{@desc}\e[0m"
 		puts format_cmd @cmd unless @cmd.empty?
 		Kernel::print @out

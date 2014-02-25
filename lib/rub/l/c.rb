@@ -302,7 +302,6 @@ module L::C
 		src.map! do |s|
 			out = R::Env.out_dir + 'l/c/' + C.unique_segment(self) + "#{s.basename}.o"
 			
-			pp R.find_target(s)
 			R.find_target(s) or TargetCSource.new(self, s, headers)
 			::C.generator(s, compiler.compile_command(self, s, out), out, desc:"Compiling")
 		end

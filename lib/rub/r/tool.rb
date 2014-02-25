@@ -22,6 +22,7 @@
 #                                                                              #
 ################################################################################
 
+require 'fssm'
 require 'valid_array'
 
 class Module
@@ -156,4 +157,8 @@ module R::Tool
 			C.path item
 		end
 	end
+	
+	cattr_reader :fsmonitor
+	@fsmonitor = FSSM::Monitor.new
+	#Thread.new { @fsmonitor.run }
 end

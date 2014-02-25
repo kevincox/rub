@@ -28,6 +28,7 @@
 require 'pathname'
 require 'set'
 require 'pp'
+require 'thread'
 require 'digest/sha1'
 
 require 'sysexits'
@@ -35,6 +36,7 @@ require 'facter'
 require 'xdg'
 
 # This is first so we modify all of our classes.
+# Traces all calls.
 '
 class Object
 	def self.method_added name
@@ -80,13 +82,48 @@ R::I::Runner.do_file(R::Env.cmd_dir+"dir.rub")
 ##### Add default target if necessary.
 ARGV.empty? and ARGV << ':all'
 
-##### Build requested targets.
-ARGV.each do |t|
-	t = if t =~ /^:[^\/]*$/ # Is a tag.
-		t[1..-1].to_sym
-	else
-		C.path(t)
+cont = true
+
+while cont
+	##### Build requested targets.
+	ARGV.each do |t|
+		t = if t =~ /^:[^\/]*$/ # Is a tag.
+			t[1..-1].to_sym
+		else
+			C.path(t)
+		end
+		R::get_target(t).build
 	end
-	R::get_target(t).build
+	
+	if R::I::CommandLine.watch
+		puts "Build complete."
+		
+		changed = Set.new
+		while true
+			tosleep = 0
+			R.oodtargets_mutex.synchronize do
+				ood = R.oodtargets
+				changed.merge ood
+				
+				if changed.empty? # Nothing new.
+					R.oodtargets_cond.wait R.oodtargets_mutex # So wait for something.
+				elsif ood.any? # Batch changes a bit.
+					tosleep = 0.5
+				else
+					tosleep = 0 # Rebuild.
+				end
+			end
+			
+			if tosleep != 0
+				sleep tosleep
+			else
+				break
+			end
+		end
+		
+		changed.each {|t| self.find_target(t).invalidate }
+	else
+		cont = false
+	end
 end
 

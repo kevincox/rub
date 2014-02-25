@@ -34,6 +34,20 @@ module R
 	@targets = {}
 	@sources = {}
 	
+	cattr_accessor :oodtargets
+	cattr_reader :oodtargets_mutex, :oodtargets_cond
+	@oodtargets = Set.new
+	@oodtargets_mutex = Mutex.new
+	@oodtargets_cond = ConditionVariable.new
+	
+	def self.oodtargets_add(t)
+		pp 'adding'
+		oodtargets_mutex.syncronize do
+			oodtargets << t
+			oodtargets_cond.broadcast
+		end
+	end
+	
 	# Find a target.
 	#
 	# Returns a target for +path+ or nil.
@@ -74,6 +88,8 @@ module R
 		@targets[C.path(path)] = target
 	end
 	
+	
+	
 	# The base target class.
 	#
 	# It has simple building logic and a way to register targets.  All
@@ -109,7 +125,15 @@ module R
 		def register
 			output.each do |d|
 				R.set_target(d, self)
+				
+				if d.is_a? Pathname and d.exist?
+					R::Tool.fsmonitor.file d do
+						update {|b,r| oodtargets_add d}
+						delete {|b,r| oodtargets_add d}
+					end
+				end
 			end
+			
 		end
 		
 		# Is this target up to date?
@@ -188,6 +212,8 @@ module R
 		# 
 		# This is called when the inputs have changed, you should check it
 		# again.
+		def invalidate
+		end
 	end
 	
 	# Target with additional functionality.

@@ -68,6 +68,9 @@ Options:
   and user defaults from being used.  Use with caution because it could
   cause a build to fail if the provided definitions don't contain enough
   information.
+--watch
+  Don't exit after building, instead watch input files and rebuild if they
+  change.
 --no-cache
   Disable caching.  All state from previous runs will be discarded.  Caching
   will still be performed inside a single run.
@@ -96,11 +99,12 @@ EOS
 		exit
 	end
 	
-	class << self
-		attr_reader :cache
-	end
+	cattr_reader :cache
 	@cache = true
-
+	
+	cattr_reader :watch
+	@watch = false
+	
 	opts = GetoptLong.new(
 		['--out',    '-o',                      GetoptLong::REQUIRED_ARGUMENT ],
 		['-D', '--define',                      GetoptLong::REQUIRED_ARGUMENT ],
@@ -109,6 +113,7 @@ EOS
 		['-S', '--script',                      GetoptLong::REQUIRED_ARGUMENT ],
 		['--explicit-scripts',                  GetoptLong::NO_ARGUMENT       ],
 		['--no-cache',                          GetoptLong::NO_ARGUMENT       ],
+		['--watch',                             GetoptLong::NO_ARGUMENT       ],
 		['--doc',                               GetoptLong::NO_ARGUMENT       ],
 		['--help',    '-h',                     GetoptLong::NO_ARGUMENT       ],
 		['--version', '-V', '-v',               GetoptLong::NO_ARGUMENT       ],
@@ -144,6 +149,8 @@ EOS
 				sysscripts = []
 			when '--no-cache'
 				@cache = false
+			when '--watch'
+				@watch = true
 			when '--doc'
 				lib    = Pathname.new(__FILE__).realpath.parent.parent.parent.parent
 				base   = lib.parent
