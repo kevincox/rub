@@ -292,8 +292,8 @@ module L::C
 		headers = Set.new
 		src.keep_if do |s|
 			if s.extname.match /[H]/i
-			   headers << s
-			   false
+				headers << s
+				false
 			else
 				true
 			end
@@ -386,6 +386,10 @@ module L::C
 		
 		def hash_only_self
 			@hashcache ||= C.hash_file @f
+		end
+		
+		def invalidate
+			@hashcache = nil
 		end
 		
 		def build

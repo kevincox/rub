@@ -93,10 +93,7 @@ module L::PkgConfig
 			cx.define.merge!       p[:define]
 			cx.include_dirs.concat p[:include]
 			cx.flags.concat        p[:cflags]
-			pp cx.libs
-			pp cx.libs.class
 			cx.libs.concat         p[:libs]
-			pp cx.libs
 		end
 		
 		if ld

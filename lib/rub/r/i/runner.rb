@@ -25,7 +25,7 @@
 # Functions for running build scripts.
 module R::I::Runner
 	@@loaded = {}
-
+	
 	# Execute a file.
 	#
 	# Runs a script if it hasn't been run already.
@@ -36,7 +36,7 @@ module R::I::Runner
 		if @@loaded[f]
 			return
 		end
-	
+		
 		if not f.exist?
 			$stderr.puts "\"#{f}\" is not readable!"
 			Sysexits.exit :noinput

@@ -73,6 +73,7 @@ module R::Env
 	def self.out_dir
 		@out_dir ||= src_dir + 'build/'
 	end
+	cattr_writer :out_dir
 	
 	@global_cache = XDG[:cache_home].to_path + 'rub/'
 	

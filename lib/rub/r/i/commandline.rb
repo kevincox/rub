@@ -136,7 +136,7 @@ EOS
 	opts.each do |opt, arg|
 		case opt
 			when '--out'
-				Rub::Env.out_dir = Rub::Env.cmd_dir + arg
+				R::Env.out_dir = R::Env.cmd_dir + arg
 			when '-D'
 				scripts.push [:define,  arg]
 			when '-A'
@@ -160,7 +160,6 @@ EOS
 					base+'share/doc/'+R::Version.slug+'README.md', # Installed path.
 					base+'README.md'            # Dev path.
 				].find{|r| r.exist? }
-				pp readme
 				
 				exec(
 					'yardoc',

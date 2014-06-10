@@ -92,17 +92,24 @@ while cont
 		else
 			C.path(t)
 		end
-		R::get_target(t).build
+		
+		begin
+			R::get_target(t).build
+		rescue R::BuildError => e
+			puts e.message
+		end
 	end
 	
 	if R::I::CommandLine.watch
-		puts "Build complete."
+		puts 'Build complete.'
 		
 		changed = Set.new
 		while true
 			tosleep = 0
 			R.oodtargets_mutex.synchronize do
-				ood = R.oodtargets
+				ood = R.oodtargets.map!{|t| R.find_target t } - [nil]
+				R.oodtargets.clear
+				
 				changed.merge ood
 				
 				if changed.empty? # Nothing new.
@@ -121,7 +128,9 @@ while cont
 			end
 		end
 		
-		changed.each {|t| self.find_target(t).invalidate }
+		changed.each do |t|
+			t.invalidate if t
+		end
 	else
 		cont = false
 	end

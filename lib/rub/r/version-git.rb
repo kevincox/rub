@@ -35,7 +35,7 @@ module R::Version
 	def self.dist_from_tag
 		`#{@@cdto}; git rev-list HEAD ^#{tag} --count`.to_i
 	end
-
+	
 	# Major version number.
 	def self.version_major
 		tag.sub @@regex, '\1'

@@ -160,5 +160,5 @@ module R::Tool
 	
 	cattr_reader :fsmonitor
 	@fsmonitor = FSSM::Monitor.new
-	#Thread.new { @fsmonitor.run }
+	Thread.new { @fsmonitor.run }
 end

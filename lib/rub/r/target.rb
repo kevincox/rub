@@ -41,8 +41,7 @@ module R
 	@oodtargets_cond = ConditionVariable.new
 	
 	def self.oodtargets_add(t)
-		pp 'adding'
-		oodtargets_mutex.syncronize do
+		oodtargets_mutex.synchronize do
 			oodtargets << t
 			oodtargets_cond.broadcast
 		end
@@ -88,8 +87,6 @@ module R
 		@targets[C.path(path)] = target
 	end
 	
-	
-	
 	# The base target class.
 	#
 	# It has simple building logic and a way to register targets.  All
@@ -127,9 +124,9 @@ module R
 				R.set_target(d, self)
 				
 				if d.is_a? Pathname and d.exist?
-					R::Tool.fsmonitor.file d do
-						update {|b,r| oodtargets_add d}
-						delete {|b,r| oodtargets_add d}
+					R::Tool.fsmonitor.path d.dirname do
+						update {|b,r| R::oodtargets_add Pathname.new(b)+r }
+						delete {|b,r| R::oodtargets_add Pathname.new(b)+r }
 					end
 				end
 			end
@@ -270,12 +267,18 @@ module R
 			@hashcache ||= C.hash_file f
 		end
 		
+		def invalidate
+			@hashcache = nil
+		end
+		
 		def build
 			if not @src.exist?
 				#p self
-				$stderr.puts "Error: source file #{@src} does not exist!"
-				Sysexits.exit :noinput
+				raise R::BuildError.new "Error: source file #{@src} does not exist!"
 			end
 		end
+	end
+	
+	class BuildError < StandardError
 	end
 end

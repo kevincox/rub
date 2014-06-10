@@ -29,7 +29,7 @@ module R
 	# it is easier and prettier to use {C.generator}
 	class TargetGenerator < TargetSmart
 		attr_accessor :action
-	
+		
 		def initialize
 			super
 			
@@ -75,7 +75,9 @@ module R
 		
 		def build_self
 			R::run(['mkdir', '-pv', *@output.map{|o| o.dirname}], "Preparing output directories", importance: :low)
-			@cmd.all?{|c| R::run(c, "#@action #{@output.to_a.join", "}")} or exit 1
+			unless @cmd.all?{|c| R::run(c, "#@action #{@output.to_a.join", "}")}
+				raise BuildError.new "Build Command Failed"
+			end
 		end
 	end
 end

@@ -242,7 +242,9 @@ module L::Test
 		def build
 			build_dependancies
 			
-			R::run(@cmd[0], "#@action #{@output.to_a.join", "}") or exit 1
+			unless R::run(@cmd[0], "#@action #{@output.to_a.join", "}")
+				raise R::BuildError.new "Tests Failed"
+			end
 		end
 	end
 	

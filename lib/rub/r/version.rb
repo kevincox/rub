@@ -140,6 +140,6 @@ elsif cwd.join('version-generated.rb').exist?
 	#puts 'Loading generated'
 	load cwd.join('version-generated.rb').to_s
 else
-	raise "Couldn't fine version info!"
+	raise "Couldn't find version info!"
 	Sysexits.exit :software
 end
