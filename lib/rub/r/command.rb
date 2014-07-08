@@ -267,7 +267,7 @@ class R::BuildStep
 	def format_cmd(cmd)
 		cmd.map do |e|
 			if /[~`!#$&*(){};'"]/ =~ e
-				"'#{e.sub(/['"]/, '\\\1')}'"
+				"'#{e.gsub(/['\\]/, '\\\\\\0')}'"
 			else
 				e
 			end
