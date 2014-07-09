@@ -43,7 +43,7 @@ module L::LD
 			files = R::Tool.make_set_paths files
 			libs  = R::Tool.make_set libs
 			out = C.path out
-		
+			
 			c = [find, "-o#{out}"]
 			
 			c << opt.args

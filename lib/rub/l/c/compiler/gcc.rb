@@ -77,6 +77,8 @@ module L::C::CompilerGCC
 		f << @@o_flags[opt.optimize    ]
 		f << @@o_flags[opt.optimize_for]
 		
+		f << '-flto' << '-fno-fat-lto-objects' if opt.linktime_optimization
+		
 		f << '-fPIC' if opt.pic
 		
 		f << opt.include_dirs.map do |d|

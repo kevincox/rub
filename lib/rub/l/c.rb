@@ -70,6 +70,14 @@ module L::C
 	cattr_accessor :optimize
 	@optimize = @debug ? :none : :full
 	
+	# Link time optimizations.
+	# 
+	# If `true` enable link time optimizations if the complier supports it.
+	# 
+	# @return Boolean
+	cattr_accessor :linktime_optimization
+	@linktime_optimization = false
+	
 	# Default optimization goal.
 	#
 	# This determines what the compiler should optimize for if it has the
