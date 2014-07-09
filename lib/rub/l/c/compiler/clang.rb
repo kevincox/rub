@@ -70,7 +70,6 @@ module L::C::CompilerClang
 		f << opt.flags
 		
 		f << '-g' if opt.debug
-		f << '-p' if opt.profile
 		
 		f << @@warn_flags[opt.warn]
 		f << '-Werror' if opt.warn_fatal
