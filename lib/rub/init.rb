@@ -88,7 +88,7 @@ while cont
 	##### Build requested targets.
 	ARGV.each do |t|
 		t = if t =~ /^:[^\/]*$/ # Is a tag.
-			t[1..-1].to_sym
+			t[1..-1].gsub('-', '_').to_sym
 		else
 			C.path(t)
 		end
