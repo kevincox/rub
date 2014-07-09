@@ -48,8 +48,8 @@ module L::C::CompilerGCC
 	@@o_flags = {
 		:none=> D[:debug] ? '-Og' : '-O0',
 		:some=>'-O1',
-		:full=>'-O2',
-		:max =>'-O3',
+		:full=>'-O3',
+		:max =>'-Ofast',
 	}
 	@@of_flags = {
 		nil=>[],
