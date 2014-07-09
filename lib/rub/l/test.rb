@@ -93,7 +93,7 @@ end
 module L::Test
 	def self.make_test(klass)
 		@tests ||= {}
-	
+		
 		sklass = klass.to_s
 		if sklass =~ /^Test/ 
 			name = sklass
@@ -113,7 +113,7 @@ module L::Test
 			
 			@io = opt[:io] || $stdout
 		end
-	
+		
 		##
 		# Starts reporting on the run.
 		def start
@@ -154,11 +154,11 @@ module L::Test
 				t.input.to_a
 			end.flatten.to_set
 		end
-	
+		
 		def output
 			Set[:test]
 		end
-	
+		
 		def initialize
 			super()
 			
@@ -175,12 +175,12 @@ module L::Test
 		
 		def build_self
 			out = StringIO.new("", "w")
-		
+			
 			options = {
 				io:      out,
 				verbose: true,
 			}
-
+			
 			reporter = Minitest::CompositeReporter.new
 			reporter << Minitest::SummaryReporter.new(options[:io], options)
 			
@@ -203,11 +203,11 @@ module L::Test
 		def input
 			@klass.rub_get_dependancies
 		end
-	
+		
 		def output
 			Set[@tag]
 		end
-	
+		
 		def initialize(klass, t)
 			@tag = t.to_sym
 			@klass = klass
@@ -242,12 +242,17 @@ module L::Test
 		def build
 			build_dependancies
 			
-			unless R::run(@cmd[0], "#@action #{@output.to_a.join", "}")
+			unless R::run @cmd[0], "Running #{@output.to_a.join", "}"
 				raise R::BuildError.new "Tests Failed"
 			end
 		end
 	end
 	
+	# Use an external command to test.
+	# 
+	# Runs the command `cmd` and the tests pass if the return value is `0`.
+	# 
+	# @param name The name of the test.
 	def self.external(cmd, name)
 		t = TargetTestExecutable.new
 		t.add_cmd cmd
