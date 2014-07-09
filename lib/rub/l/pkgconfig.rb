@@ -97,7 +97,7 @@ module L::PkgConfig
 		end
 		
 		if ld
-			ld.args.concat       p[:lflags]
+			ld.flags.concat p[:lflags]
 		end
 	end
 end

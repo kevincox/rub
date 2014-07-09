@@ -46,7 +46,7 @@ module L::LD
 			
 			c = [find, "-o#{out}"]
 			
-			c << opt.args
+			c << opt.flags
 			
 			c << case format
 				when :exe

@@ -85,8 +85,8 @@ module L::LD
 	#       options provided by this class in order to maintain portability.
 	#
 	# @return [Array<String>] A list of arguments to add.
-	cattr_accessor :args
-	@args = D[:ld_flags] || []
+	cattr_accessor :flags
+	@flags = D[:ld_flags] || []
 	
 	def self.set_linker(name)
 		self.linker = linkers[name]
