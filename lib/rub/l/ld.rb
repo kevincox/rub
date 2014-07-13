@@ -58,6 +58,14 @@ module L::LD
 	cattr_accessor :optimize
 	@optimize = D[:debug] ? :none : :full
 	
+	# Link Time Optimization
+	# 
+	# Should link time optimization be performed?
+	# 
+	# @return true or false
+	cattr_accessor :linktime_optimization
+	@linktime_optimization = false
+	
 	# @!scope class
 	# A list of library search directories to be added to the default search
 	# path.

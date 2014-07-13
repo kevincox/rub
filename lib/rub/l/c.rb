@@ -532,6 +532,15 @@ EOS
 		t.output
 	end
 	
+	def self._linkerclone
+		l = L::LD.clone
+		
+		l.linktime_optimization = self.linktime_optimization
+		l.optimize              = self.optimize
+		
+		l
+	end
+	
 	# Compile and link an executable.
 	#
 	# @param src      [Set<Pathname,String>,Array<Pathname,String>,Pathname,String]
@@ -540,7 +549,7 @@ EOS
 	# @return [Pathname] The resulting executable.
 	def self.program(src, name)
 		obj = compile(src)
-		linker = L::LD.clone
+		linker = _linkerclone
 		
 		linker.set_linker compiler.linker
 		linker.link(obj, libs, name, format: :exe)
@@ -559,7 +568,7 @@ EOS
 		scplr.pic = true
 		obj = scplr.compile(src)
 		
-		linker = L::LD.clone
+		linker = _linkerclone
 		linker.set_linker compiler.linker
 		linker.link(obj, libs, name, format: :shared, ver: version)
 	end

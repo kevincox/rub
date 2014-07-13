@@ -65,7 +65,7 @@ module L::C::CompilerClang
 	def self.generate_flags(opt)
 		f = []
 		
-		#f << '-emit-llvm'
+		f << '-emit-llvm' if opt.linktime_optimization
 		
 		f << '-g' if opt.debug
 		

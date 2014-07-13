@@ -46,6 +46,8 @@ module L::LD
 			
 			c = [find, "-o#{out}"]
 			
+			c << '-flto' if opt.linktime_optimization
+			
 			c << opt.flags
 			
 			c << case format
