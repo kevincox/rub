@@ -123,11 +123,16 @@ module R
 			output.each do |d|
 				R.set_target(d, self)
 				
-				if d.is_a? Pathname and d.exist?
-					R::Tool.fsmonitor.path d.dirname do
-						update {|b,r| R::oodtargets_add Pathname.new(b)+r }
-						delete {|b,r| R::oodtargets_add Pathname.new(b)+r }
-					end
+				return unless d.is_a? Pathname
+				return unless d.exist?
+				
+				if !D[:watch_sys]
+					return unless d.fnmatch? "#{R::Env.src_dir}/**/*"
+				end
+				
+				R::Tool.fsmonitor.path d.dirname do
+					update {|b,r| R::oodtargets_add Pathname.new(b)+r }
+					delete {|b,r| R::oodtargets_add Pathname.new(b)+r }
 				end
 			end
 			
@@ -259,7 +264,6 @@ module R
 		attr_reader :output
 		
 		def initialize(p)
-			pp p
 			@src    = p
 			@output = Set[p]
 			
