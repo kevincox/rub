@@ -78,7 +78,7 @@ module C
 		# invocation, but use inspect.  It works alright.
 		r = o.inspect.gsub(/(?<!:):0x[0-9a-f]*/, '')
 		
-		# Modules don't print themselfs meaningfully.
+		# Modules don't print themselves meaningfully.
 		if o.is_a? Module
 			r << o.pretty_print_instance_variables.map{|k| [k, o.instance_variable_get(k)] }.inspect
 		end
@@ -124,8 +124,8 @@ module C
 		#
 		# @param t [Symbol] the name of the tag.
 		def initialize(t)
-			t.is_a? Symbol or raise 'Targets can be created with symbols only.'
-		
+			t.is_a? Symbol or raise 'Tags can be created with symbols only.'
+			
 			@tag = t
 			@output = Set[t]
 			@input  = Set[]
