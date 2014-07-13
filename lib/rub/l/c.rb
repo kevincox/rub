@@ -218,7 +218,7 @@ module L::C
 			c.success?
 		end
 		
-		# Peform a test compile.
+		# Perform a test compile.
 		#
 		# @param (see do_compile_string)
 		# @return [true,false] true if the compilation succeeded.
@@ -228,6 +228,18 @@ module L::C
 			c.success?
 		end
 		
+		# Perform a test compile of an expression.
+		# 
+		# @param expr, the expression(s)
+		# @return [true,false] true iff the compilation succeeded.
+		def self.test_compile_expr(opt, expr)
+			test_compile_string opt, <<EOF
+int main(int argc, char **argv) {
+#{expr}
+}
+EOF
+		end
+		
 		# Check to see if a macro is defined.
 		#
 		# @param name [String] macro identifier.
@@ -235,7 +247,7 @@ module L::C
 		def self.test_macro(opt, name)
 			test_compile_string opt, <<-EOF.gsub(/^\s+/, '')
 				#ifndef #{name}
-				#error "#{name}Not Defined"
+				#error "#{name} Not Defined"
 				#endif
 			EOF
 		end
@@ -280,13 +292,33 @@ module L::C
 				c.test_macro(self, '__LINE__')
 			)
 		
-		r or $stderr.puts "Ignoring compiler #{n} because it failed the tests."
+		r or $stderr.puts "Ignoring compiler #{n} because it failed the sanity check."
 		
 		r
 	end
 	
 	D[:c_compiler].map! {|c| c.to_sym}
 	@compiler = compilers[ D[:c_compiler].find{|c| compilers.has_key? c} ]
+	
+	def self.test_file(f)
+		compiler.test_compile self, f
+	end
+	def self.test(str)
+		compiler.test_compile_string self, str
+	end
+	def self.test_expr(expr)
+		compiler.test_compile_expr self, expr
+	end
+	
+	def self.deftest_file(macro, f)
+		define[macro] = test(f) ? 1:0
+	end
+	def self.deftest(macro, str)
+		define[macro] = test(str) ? 1:0
+	end
+	def self.deftest_expr(macro, expr)
+		define[macro] = test(expr) ? 1:0
+	end
 	
 	# Compile source files.
 	#

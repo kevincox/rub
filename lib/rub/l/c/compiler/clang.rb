@@ -67,8 +67,6 @@ module L::C::CompilerClang
 		
 		#f << '-emit-llvm'
 		
-		f << opt.flags
-		
 		f << '-g' if opt.debug
 		
 		f << @@warn_flags[opt.warn]
@@ -76,6 +74,8 @@ module L::C::CompilerClang
 		
 		f << @@o_flags[opt.optimize    ]
 		f << @@o_flags[opt.optimize_for]
+		
+		f << opt.flags
 		
 		f << '-fPIC' if opt.pic
 		

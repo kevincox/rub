@@ -66,8 +66,6 @@ module L::C::CompilerGCC
 	def self.generate_flags(opt)
 		f = []
 		
-		f << opt.flags
-		
 		f << '-g' if opt.debug
 		f << '-p' if opt.profile
 		
@@ -78,6 +76,8 @@ module L::C::CompilerGCC
 		f << @@o_flags[opt.optimize_for]
 		
 		f << '-flto' << '-fno-fat-lto-objects' if opt.linktime_optimization
+		
+		f << opt.flags
 		
 		f << '-fPIC' if opt.pic
 		
