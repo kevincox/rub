@@ -156,7 +156,7 @@ module R
 			)
 		end
 		
-		@@symbolcounter = rand(2**32) # Shouldn't repeat very often.
+		@@symbolcounter = rand(2**31) # Shouldn't repeat very often.
 		def hash_output(t)
 			if t.is_a? Symbol
 				@@symbolcounter++
@@ -259,8 +259,11 @@ module R
 		attr_reader :output
 		
 		def initialize(p)
+			pp p
 			@src    = p
 			@output = Set[p]
+			
+			register
 		end
 		
 		def hash_output(f)
