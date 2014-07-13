@@ -127,7 +127,7 @@ module R
 				return unless d.exist?
 				
 				if !D[:watch_sys]
-					return unless d.fnmatch? "#{R::Env.src_dir}/**/*"
+					return unless d.fnmatch? "#{R::Env.src_dir}**"
 				end
 				
 				R::Tool.fsmonitor.path d.dirname do
