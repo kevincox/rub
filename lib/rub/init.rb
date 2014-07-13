@@ -100,6 +100,8 @@ while cont
 		end
 	end
 	
+	# pp R.targets
+	
 	if R::I::CommandLine.watch
 		puts 'Build complete.'
 		
