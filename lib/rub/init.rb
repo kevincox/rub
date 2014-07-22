@@ -97,6 +97,7 @@ while cont
 			R::get_target(t).build
 		rescue R::BuildError => e
 			puts e.message
+			exit 1 unless R::I::CommandLine.watch
 		end
 	end
 	
