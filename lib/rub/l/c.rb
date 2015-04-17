@@ -331,7 +331,8 @@ EOF
 		
 		headers = Set.new
 		src.keep_if do |s|
-			if s.extname.match /[H]/i
+			case s.extname
+			when /H/i
 				headers << s
 				false
 			else
@@ -340,6 +341,8 @@ EOF
 		end
 		
 		src.map! do |s|
+			next s if s.extname == '.o'.freeze # Already compiled.
+			
 			out = R::Env.out_dir + 'l/c/' + C.unique_segment(self) + "#{s.basename}.o"
 			
 			R.find_target(s) or TargetCSource.new(self, s, headers)
