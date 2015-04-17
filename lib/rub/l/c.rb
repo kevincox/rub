@@ -577,7 +577,8 @@ EOS
 		super
 		
 		self.include_dirs = s.include_dirs.dup
-		self.libs = s.libs.dup
-		self.define = s.define.dup
+		self.libs         = s.libs.dup
+		self.define       = s.define.dup
+		self.flags        = s.flags.dup
 	end
 end

@@ -36,7 +36,7 @@ module L::C::CompilerClang
 	
 	def self.find
 		@exe and return @exe
-	
+		
 		@exe = ::C.find_command 'clang'
 	end
 	
