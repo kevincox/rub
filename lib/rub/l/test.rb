@@ -209,12 +209,12 @@ module L::Test
 		end
 		
 		def initialize(klass, t)
+			super()
+			
 			@tag = t.to_sym
 			@klass = klass
 			
 			klass.rub_target = self
-			
-			super()
 		end
 		
 		def run_tests(reporter, options)
@@ -239,9 +239,7 @@ module L::Test
 	end
 	
 	class TargetTestExecutable < R::TargetGenerator
-		def build
-			build_dependancies
-			
+		def build_self
 			unless R::run @cmd[0], "Running #{@output.to_a.join", "}"
 				raise R::BuildError.new "Tests Failed"
 			end

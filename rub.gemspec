@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
 	s.license     = 'zlib'
 	
 	s.add_runtime_dependency 'sysexits',    '>=0'
+	s.add_runtime_dependency 'thread',      '>=0'
 	s.add_runtime_dependency 'xdg',         '>=0'
 	s.add_runtime_dependency 'valid_array', '>=0'
 	

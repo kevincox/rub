@@ -22,6 +22,7 @@
 #                                                                              #
 ################################################################################
 
+require 'thread/pool'
 require 'fssm'
 require 'valid_array'
 
@@ -158,7 +159,30 @@ module R::Tool
 		end
 	end
 	
+	class Blocker
+		def initialize
+			@queue = Queue.new
+		end
+		
+		def notify err
+			@queue << err
+		end
+		
+		def wait
+			err = @queue.pop
+			raise err if err
+		end
+	end
+	
+	Thread.abort_on_exception = true
+	Thread::Pool.abort_on_exception = true
+	
 	cattr_reader :fsmonitor
 	@fsmonitor = FSSM::Monitor.new
 	Thread.new { @fsmonitor.run }
+	
+	D[:r_jobs] ||= Facter.value('processors')['count']
+	puts "Using #{D:r_jobs} simultaneous jobs."
+	@threadpool = Thread.pool D[:r_jobs]
+	cattr_accessor :threadpool
 end

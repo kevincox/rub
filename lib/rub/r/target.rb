@@ -92,6 +92,12 @@ module R
 	# It has simple building logic and a way to register targets.  All
 	# targets should inherit from this class.
 	class Target
+		def initialize
+			@mutex = Mutex.new
+			@waiting = 0
+			@notify = []
+		end
+		
 		# Inputs
 		#
 		# @return [Set<Pathname>] The inputs this target depends on.
@@ -181,7 +187,9 @@ module R
 		
 		# Build the inputs.
 		def build_dependancies
-			input.each{|i| R::get_target(i).build }
+			input.each do |i|
+				R::get_target(i).build self
+			end
 		end
 		private :build_dependancies
 		
@@ -195,6 +203,11 @@ module R
 		end
 		private :build_self
 		
+		def build_self_if_dirty
+			build_self
+		end
+		private :build_self_if_dirty
+		
 		# Build.
 		#
 		# This is a simple build method.  It calls {#build_dependancies} then
@@ -203,11 +216,53 @@ module R
 		# control.
 		# 
 		# @return [void]
-		def build
-			build_dependancies
-			build_self
+		def build notify=nil
+			@notify << notify if notify
 			
-			nil
+			@mutex.synchronize do
+				@waiting += input.length + 1
+			end
+			
+			build_dependancies
+			
+			self.notify nil # Just to handle things with no dependencies.
+		end
+		
+		def notify err
+			if err
+				_notify_listeners err
+				return
+			end
+			
+			winner = false
+			@mutex.synchronize do
+				if @waiting == 1
+					winner = true
+					@waiting = 0
+				elsif @waiting > 1
+					@waiting -= 1
+				end
+			end
+			return unless winner
+			
+			R::Tool.threadpool.process do
+				begin
+					build_self_if_dirty
+					_notify_listeners nil
+				rescue
+					_notify_listeners $!
+				end
+			end
+		end
+		
+		def _notify_listeners *args
+			to_notify = nil
+			@mutex.synchronize do
+				to_notify = @notify
+				@notify = []
+				@waiting = 0
+			end
+			to_notify.each{|t| t.notify *args }
 		end
 		
 		# Invalidate caches.
@@ -223,6 +278,8 @@ module R
 		attr_reader :input, :output
 		
 		def initialize
+			super()
+			
 			@input  = Set.new
 			@output = Set.new
 		end
@@ -231,7 +288,7 @@ module R
 		#
 		# @return [void]
 		def clean
-			output.all?{|f| !f.is_a?(Symbol) and f.exist?} or return
+			return unless output.all?{|f| !f.is_a?(Symbol) and f.exist?}
 			
 			R::ppersistant["Rub.TargetSmart.#{@output.sort.join('\0')}"] = hash_self
 		end
@@ -248,9 +305,7 @@ module R
 			R::ppersistant["Rub.TargetSmart.#{@output.sort.join('\0')}"] == hash_self
 		end
 		
-		def build
-			build_dependancies
-			
+		def build_self_if_dirty
 			clean? and return
 			
 			build_self
@@ -278,11 +333,12 @@ module R
 			@hashcache = nil
 		end
 		
-		def build
+		def build notify=nil
 			if not @src.exist?
-				#p self
 				raise R::BuildError.new "Error: source file #{@src} does not exist!"
 			end
+			
+			notify.notify nil if notify
 		end
 	end
 	

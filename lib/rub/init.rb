@@ -83,6 +83,7 @@ R::I::Runner.do_file(R::Env.cmd_dir+"dir.rub")
 ARGV.empty? and ARGV << ':all'
 
 cont = true
+blocker = R::Tool::Blocker.new
 
 while cont
 	##### Build requested targets.
@@ -94,7 +95,8 @@ while cont
 		end
 		
 		begin
-			R::get_target(t).build
+			R::get_target(t).build blocker
+			blocker.wait
 		rescue R::BuildError => e
 			puts e.message
 			exit 1 unless R::I::CommandLine.watch

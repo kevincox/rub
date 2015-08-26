@@ -80,7 +80,7 @@ module R
 			end
 		end
 		
-		def build
+		def build_self
 			gen_help
 		end
 	end
@@ -92,9 +92,7 @@ module R
 			super :help
 		end
 		
-		def build
-			super
-			
+		def build_self
 			puts <<'EOS'
 Help:
   Just displaying tags.  If you want to see more see:
@@ -115,9 +113,7 @@ EOS
 			super 'help-tag'
 		end
 		
-		def build
-			super
-		
+		def build_self
 			puts 'Tags:'
 			print_targets @@tag
 		end
@@ -131,9 +127,7 @@ EOS
 			super 'help-installed'
 		end
 		
-		def build
-			super
-		
+		def build_self
 			puts 'Installed:'
 			print_targets @@ins
 		end
@@ -147,9 +141,7 @@ EOS
 			super 'help-built'
 		end
 		
-		def build
-			super
-		
+		def build_self
 			puts 'Build Targets:'
 			print_targets @@bld
 		end
@@ -159,18 +151,20 @@ EOS
 	class TargetHelpAll < TargetHelp
 		include Singleton
 		
+		@@inputs = Set[
+			'help-tag',
+			'help-installed',
+			'help-built',
+ 		]
+		def inputs
+			@@inputs
+		end
+		
 		def initialize
 			super 'help-all'
 		end
 		
-		def build
-			super
-			
-			[
-				'help-tag',
-				'help-installed',
-				'help-built',
-			].each{|t| R.get_target(t.to_sym).build }
+		def build_self
 		end
 	end
 	TargetHelpAll.instance

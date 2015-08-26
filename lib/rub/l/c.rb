@@ -355,7 +355,7 @@ EOF
 	# A C source file.
 	class TargetCSource < R::Target
 		def initialize(opt, f, input = Set.new)
-			#TargetC.initialize
+			super()
 			
 			@f = C.path(f)
 			@opt = opt
@@ -435,11 +435,17 @@ EOF
 			@hashcache = nil
 		end
 		
-		def build
-			@depsbuilt and return
-			
+		def build notify=nil
+			if @depsbuilt
+				notify.notify nil if notify
+				return
+			end
 			@depsbuilt = true
-			build_dependancies
+			
+			super
+		end
+		
+		def build_self
 		end
 	end
 	

@@ -46,7 +46,7 @@ module L::Util
 			f
 		end
 		
-		def build
+		def build_self
 			R::run(['rm', '-fv']+@files.to_a, "Removing installed files.", importance: :med)
 		end
 	end

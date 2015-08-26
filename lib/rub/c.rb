@@ -124,6 +124,8 @@ module C
 		#
 		# @param t [Symbol] the name of the tag.
 		def initialize(t)
+			super()
+			
 			t.is_a? Symbol or raise 'Tags can be created with symbols only.'
 			
 			@tag = t
@@ -141,8 +143,7 @@ module C
 			input.merge(f)
 		end
 		
-		def build
-			input.each{|i| R::get_target(i).build }
+		def build_self
 		end
 	end
 	
@@ -166,6 +167,8 @@ module C
 		#
 		# @param t [Symbol] the name of the tag.
 		def initialize(t)
+			super()
+			
 			@name = t
 			@target = TargetTag.new(t)
 			@target.register
